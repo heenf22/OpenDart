@@ -11,7 +11,6 @@ namespace OpenDartTest
             Console.WriteLine("Hello TestOpenDart!");
 
             // Open DART API Key(https://opendart.fss.or.kr/ 에서 발급받아야함)
-            // OpenDartClient.Instance.apiKey = "af02b784cd62f41d5601bea249119dac0890a123";
             OpenDartClient.Instance.apiKey = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
             OpenDartClient.Instance.dummyDirectory = @"C:\Users\heenf\Desktop\dummy";
 
