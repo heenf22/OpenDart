@@ -44,7 +44,7 @@ namespace OpenDart.OpenDartClient
             // X.509 SSL Define (private OCP) SSL 통신을 위해 CertificatePolicy property 등록
             //System.Net.ServicePointManager.ServerCertificateValidationCallback += new System.Net.Security.RemoteCertificateValidationCallback(ValidateServerCertificate);
             // or
-            System.Net.ServicePointManager.ServerCertificateValidationCallback = delegate (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors) { return true; };
+            ServicePointManager.ServerCertificateValidationCallback = delegate (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors) { return true; };
             //ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls |      // TLS 1.0
             //                                       SecurityProtocolType.Tls11 |    // TLS 1.1
             //                                       SecurityProtocolType.Tls12 |    // TLS 1.2   
@@ -87,10 +87,7 @@ namespace OpenDart.OpenDartClient
         // Open DART 쿼리용 키로 회원가입 후 발급받아 사용, 하루 이용횟수에 제한이 있음
         public string apiKey { get; set; }
         public string apiUri { get; set; } = "https://opendart.fss.or.kr/api";
-        public int requestApiKeyCount
-        {
-            get;
-        }
+        public int requestApiKeyCount { get; }
 
         private CookieCollection cookiecollection;
 
@@ -725,7 +722,19 @@ namespace OpenDart.OpenDartClient
          * Request Parameter:
          * 키	        명칭	        타입	        필수여부	    값설명
          * crtfc_key    API 인증키  STRING(40)   Y	        발급받은 인증키(40자리)
-         * 
+         *
+         * Reponse Result:
+         * 키	명칭	List 여부	출력설명
+         *   status	에러 및 정보 코드		(※메시지 설명 참조)
+         *   message	에러 및 정보 메시지		(※메시지 설명 참조)
+         *   corp_code	고유번호	Y	공시대상회사의 고유번호(8자리)
+         *   ※ ZIP File 안에 있는 XML파일 정보
+         *   corp_name	정식명칭	Y	정식회사명칭
+         *   ※ ZIP File 안에 있는 XML파일 정보
+         *   stock_code	종목코드	Y	상장회사인 경우 주식의 종목코드(6자리)
+         *   ※ ZIP File 안에 있는 XML파일 정보
+         *   modify_date	최종변경일자	Y	기업개황정보 최종변경일자(YYYYMMDD)
+         *   ※ ZIP File 안에 있는 XML파일 정보
          * Response Status:
          *  - 000 :정상
          *  - 010 :등록되지 않은 키입니다.
