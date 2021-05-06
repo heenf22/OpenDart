@@ -11,7 +11,7 @@ namespace OpenDart.Models
                                                     // ※ 공시뷰어 연결에 이용예시
                                                     // - PC용 : http://dart.fss.or.kr/dsaf001/main.do?rcpNo=접수번호
                                                     // - 모바일용 : http://m.dart.fss.or.kr/html_mdart/MD1007.html?rcpNo=접수번호
-        [XmlElement("rcept_no")]
+        [XmlElement("corp_cls")]
         public string corp_cls { get; set; }	    // 법인구분	Y	법인구분 : Y(유가), K(코스닥), N(코넥스), E(기타)
         [XmlElement("corp_code")]
         public string corp_code { get; set; }        //	고유번호	Y	공시대상회사의 고유번호(8자리)
