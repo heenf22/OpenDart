@@ -35,7 +35,10 @@ namespace OpenDartTest
             // 사업보고서 주요정보 테스트 (REQ2_XXX)
             //========================================================================
             // 증자(감자) 현황, corp_code=00126380&bsns_year=2018&reprt_code=11011
-            OpenDartClient.Instance.REQ2_1_GET_IRDS_STTUS_INFO("00126380", "2018", "11011");
+            // OpenDartClient.Instance.REQ2_1_GET_IRDS_STTUS_INFO("00126380", "2018", "11011");
+
+            // 배당에 관한 사항, corp_code=00126380&bsns_year=2018&reprt_code=11011
+            OpenDartClient.Instance.REQ2_2_GET_ALOT_MATTER_INFO("00126380", "2018", "11011");
 
             //========================================================================
         }
