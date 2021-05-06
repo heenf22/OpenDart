@@ -5,13 +5,13 @@ Open DART API C# library (https://opendart.fss.or.kr/)
 DART 사이트에서 제공하는 API를 C#에서 사용하기 쉽도록 라이브러리 형태로 만들었다.
 
 ## 프로젝트 구성 및 테스트 콘솔 닷넷 명령어
-dotnet new classlib -o OpenDart
-dotnet new console -o OpenDartTest
-dotnet add OpenDartTest/OpenDartTest.csproj reference OpenDart/OpenDart.csproj
-dotnet new sln
-dotnet sln add OpenDart/OpenDart.csproj
-dotnet sln add OpenDartTest/OpenDartTest.csproj
-dotnet run --project OpenDartTest/OpenDartTest.csproj
+- dotnet new classlib -o OpenDart
+- dotnet new console -o OpenDartTest
+- dotnet add OpenDartTest/OpenDartTest.csproj reference OpenDart/OpenDart.csproj
+- dotnet new sln
+- dotnet sln add OpenDart/OpenDart.csproj
+- dotnet sln add OpenDartTest/OpenDartTest.csproj
+- dotnet run --project OpenDartTest/OpenDartTest.csproj
 
 ## 사용법
 1. [Open DART (https://opendart.fss.or.kr/)](https://opendart.fss.or.kr/) 사이트에서 가입 후 API 카를 얻는다.
