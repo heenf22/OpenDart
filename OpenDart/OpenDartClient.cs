@@ -45,10 +45,10 @@ namespace OpenDart.OpenDartClient
             //System.Net.ServicePointManager.ServerCertificateValidationCallback += new System.Net.Security.RemoteCertificateValidationCallback(ValidateServerCertificate);
             // or
             ServicePointManager.ServerCertificateValidationCallback = delegate (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors) { return true; };
-            //ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls |      // TLS 1.0
-            //                                       SecurityProtocolType.Tls11 |    // TLS 1.1
-            //                                       SecurityProtocolType.Tls12 |    // TLS 1.2   
-            //                                       SecurityProtocolType.Tls13;     // TLS 1.3
+            // ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls |      // TLS 1.0
+            //                                        SecurityProtocolType.Tls11 |    // TLS 1.1
+            //                                        SecurityProtocolType.Tls12 |    // TLS 1.2   
+            //                                        SecurityProtocolType.Tls13;     // TLS 1.3
         }
 
         // X.509 SSL Define (private OCP)
@@ -880,6 +880,161 @@ namespace OpenDart.OpenDartClient
                 //}
 
                 Console.WriteLine("---------------");
+            }
+            catch (WebException e)
+            {
+                displayWebException(e);
+                return false;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("*******************************************************************************");
+                Console.WriteLine("!!! EXCEPTION: " + e.Message);
+                Console.WriteLine("*******************************************************************************");
+                return false;
+            }
+            finally
+            {
+                DebugEndProtocol();
+            }
+
+            return true;
+        }
+
+        /******************************************************************************************************************************************************
+         * Api Category : 사업보고서 주요정보
+         * Api Name     : 1. 증자(감자) 현황, https://opendart.fss.or.kr/guide/detail.do?apiGrpCd=DS002&apiId=2019004
+         * Description  : 정기보고서(사업, 분기, 반기보고서) 내에 증자(감자) 현황을 제공합니다.
+         *              
+         * Request URL  : https://opendart.fss.or.kr/api/irdsSttus.json
+         *                https://opendart.fss.or.kr/api/irdsSttus.xml
+         * Request Parameter:
+         * 키	        명칭	        타입	        필수여부	    값설명
+         * crtfc_key	API 인증키	   STRING(40)	   Y	        발급받은 인증키(40자리)
+         * corp_code	고유번호	    STRING(8)	    Y	        공시대상회사의 고유번호(8자리)
+         *                                                          ※ 개발가이드 > 공시정보 > 고유번호 API조회 가능
+         * bsns_year	사업연도	    STRING(4)	    Y	        사업연도(4자리)
+         *                                                          ※ 2015년 이후 부터 정보제공
+         * reprt_code	보고서 코드	    STRING(5)	    Y	        1분기보고서 : 11013
+         *                                                      반기보고서 : 11012
+         *                                                      3분기보고서 : 11014
+         *                                                      사업보고서 : 11011
+         * Response Result: 
+         * 
+         * Response Status:
+         *  - 000 :정상
+         *  - 010 :등록되지 않은 키입니다.
+         *  - 011 :사용할 수 없는 키입니다. 오픈API에 등록되었으나, 일시적으로 사용 중지된 키를 통하여 검색하는 경우 발생합니다.
+         *  - 020 :요청 제한을 초과하였습니다.
+         *         일반적으로는 10,000건 이상의 요청에 대하여 이 에러 메시지가 발생되나, 요청 제한이 다르게 설정된 경우에는 이에 준하여 발생됩니다.
+         *  - 100 :필드의 부적절한 값입니다.필드 설명에 없는 값을 사용한 경우에 발생하는 메시지입니다.
+         *  - 800 :원활한 공시서비스를 위하여 오픈API 서비스가 중지 중입니다.
+         *  - 900 :정의되지 않은 오류가 발생하였습니다.
+         *  string status = response.GetResponseHeader("status");
+         *  string message = response.GetResponseHeader("message");
+         */
+        public bool REQ2_1_GET_IRDS_STTUS_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
+        {
+            DebugBeginProtocol("REQ2_1_GET_IRDS_STTUS_INFO");
+
+            try
+            {
+                string reqJson = string.Empty;
+                string resJson = string.Empty;
+
+                /*------------------------------------------------->>Request param
+                https://opendart.fss.or.kr/api/irdsSttus.json?crtfc_key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&corp_code=00126380&bsns_year=2018&reprt_code=11011
+                 ----------------------------------------------------------------------*/
+                // Serialize
+                byte[] reqData = Encoding.UTF8.GetBytes(reqJson);
+
+                // HTTP Request
+                string reqParam = string.Empty;
+                if (string.IsNullOrEmpty(apiKey))
+                {
+                    Console.WriteLine("Could not find the api key. Please set the api key.");
+                    return false;
+                }
+                reqParam += "?crtfc_key=" + apiKey;
+                if (!string.IsNullOrEmpty(corp_code)) reqParam += "&corp_code=" + corp_code;
+                if (!string.IsNullOrEmpty(bsns_year)) reqParam += "&bsns_year=" + bsns_year;
+                if (!string.IsNullOrEmpty(reprt_code)) reqParam += "&reprt_code=" + reprt_code;
+
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(apiUri + "/irdsSttus." + (isXml ? "xml" : "json") + reqParam);
+                request.ProtocolVersion = HttpVersion.Version11;
+                if (useProxy)
+                {
+                    request.Proxy = new WebProxy(proxyIp, proxyPort);
+                }
+                //request.Credentials = CredentialCache.DefaultCredentials;
+                //request.CookieContainer = new CookieContainer();
+                //if (cookiecollection != null) request.CookieContainer.Add(cookiecollection);
+                request.Method = "GET";
+                request.KeepAlive = false;
+                request.AllowAutoRedirect = false;
+                request.Timeout = timeOut * 1000;
+                request.UserAgent = "Stock Valuator Client";
+                request.ContentType = "application/json; charset=utf-8";
+                request.ContentLength = reqData.Length;
+                // request.Headers["X-Result-Message"] = "OK";
+                if (reqData.Length > 0 && request.Method != "GET")
+                {
+                    Stream dataStream = request.GetRequestStream();
+                    dataStream.Write(reqData, 0, reqData.Length);
+                    dataStream.Close();
+                }
+                DebugRequest(request, reqData, true);
+
+                // HTTP Response
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                MemoryStream ms = new MemoryStream();
+                response.GetResponseStream().CopyTo(ms);
+                byte[] resData = ms.ToArray();
+                DebugResponse(response, resData, true);
+                ms.Close();
+                response.Close();
+
+                /*------------------------------------------------<<Response JSON format
+                 {"status":"000","message":"정상","list":[
+                     {"rcept_no":"20190820000266",
+                      "corp_cls":"K",
+                      "corp_code":"00293886",
+                      "corp_name":"위닉스",
+                      "isu_dcrs_de":"1986.09.01",
+                      "isu_dcrs_stle":"현물출자",
+                      "isu_dcrs_stock_knd":"보통주",
+                      "isu_dcrs_qy":"40,000",
+                      "isu_dcrs_mstvdv_fval_amount":"5,000",
+                      "isu_dcrs_mstvdv_amount":"5,000"},
+                     {"rcept_no":"20190820000266","corp_cls":"K","corp_code":"00293886","corp_name":"위닉스","isu_dcrs_de":"2003.04.18","isu_dcrs_stle":"주식배당","isu_dcrs_stock_knd":"보통주","isu_dcrs_qy":"156,000","isu_dcrs_mstvdv_fval_amount":"500","isu_dcrs_mstvdv_amount":"500"},
+                     {"rcept_no":"20190820000266","corp_cls":"K","corp_code":"00293886","corp_name":"위닉스","isu_dcrs_de":"2004.03.15","isu_dcrs_stle":"무상증자","isu_dcrs_stock_knd":"보통주","isu_dcrs_qy":"5,356,000","isu_dcrs_mstvdv_fval_amount":"500","isu_dcrs_mstvdv_amount":"500"},
+                     {"rcept_no":"20190820000266","corp_cls":"K","corp_code":"00293886","corp_name":"위닉스","isu_dcrs_de":"2010.03.30","isu_dcrs_stle":"주식배당","isu_dcrs_stock_knd":"보통주","isu_dcrs_qy":"2,142,000","isu_dcrs_mstvdv_fval_amount":"500","isu_dcrs_mstvdv_amount":"500"},
+                     {"rcept_no":"20190820000266","corp_cls":"K","corp_code":"00293886","corp_name":"위닉스","isu_dcrs_de":"2014.08.01","isu_dcrs_stle":"유상증자(제3자배정)","isu_dcrs_stock_knd":"보통주","isu_dcrs_qy":"3,504,000","isu_dcrs_mstvdv_fval_amount":"500","isu_dcrs_mstvdv_amount":"500"},
+                     {"rcept_no":"20190820000266","corp_cls":"K","corp_code":"00293886","corp_name":"위닉스","isu_dcrs_de":"2018.01.26","isu_dcrs_stle":"전환권행사","isu_dcrs_stock_knd":"보통주","isu_dcrs_qy":"1,517,000","isu_dcrs_mstvdv_fval_amount":"500","isu_dcrs_mstvdv_amount":"500"},
+                     {"rcept_no":"20190820000266","corp_cls":"K","corp_code":"00293886","corp_name":"위닉스","isu_dcrs_de":"1990.04.07","isu_dcrs_stle":"유상증자(주주배정)","isu_dcrs_stock_knd":"보통주","isu_dcrs_qy":"20,000","isu_dcrs_mstvdv_fval_amount":"5,000","isu_dcrs_mstvdv_amount":"5,000"},
+                     {"rcept_no":"20190820000266","corp_cls":"K","corp_code":"00293886","corp_name":"위닉스","isu_dcrs_de":"1990.08.10","isu_dcrs_stle":"유상증자(주주배정)","isu_dcrs_stock_knd":"보통주","isu_dcrs_qy":"20,000","isu_dcrs_mstvdv_fval_amount":"5,000","isu_dcrs_mstvdv_amount":"5,000"},
+                     {"rcept_no":"20190820000266","corp_cls":"K","corp_code":"00293886","corp_name":"위닉스","isu_dcrs_de":"1992.11.14","isu_dcrs_stle":"유상증자(주주배정)","isu_dcrs_stock_knd":"보통주","isu_dcrs_qy":"40,000","isu_dcrs_mstvdv_fval_amount":"5,000","isu_dcrs_mstvdv_amount":"5,000"},
+                     {"rcept_no":"20190820000266","corp_cls":"K","corp_code":"00293886","corp_name":"위닉스","isu_dcrs_de":"1999.12.30","isu_dcrs_stle":"유상증자(주주배정)","isu_dcrs_stock_knd":"보통주","isu_dcrs_qy":"96,000","isu_dcrs_mstvdv_fval_amount":"5,000","isu_dcrs_mstvdv_amount":"5,000"},
+                     {"rcept_no":"20190820000266","corp_cls":"K","corp_code":"00293886","corp_name":"위닉스","isu_dcrs_de":"2000.03.31","isu_dcrs_stle":"유상증자(주주배정)","isu_dcrs_stock_knd":"보통주","isu_dcrs_qy":"24,000","isu_dcrs_mstvdv_fval_amount":"5,000","isu_dcrs_mstvdv_amount":"5,000"},
+                     {"rcept_no":"20190820000266","corp_cls":"K","corp_code":"00293886","corp_name":"위닉스","isu_dcrs_de":"2000.03.31","isu_dcrs_stle":"무상증자","isu_dcrs_stock_knd":"보통주","isu_dcrs_qy":"120,000","isu_dcrs_mstvdv_fval_amount":"5,000","isu_dcrs_mstvdv_amount":"5,000"},
+                     {"rcept_no":"20190820000266","corp_cls":"K","corp_code":"00293886","corp_name":"위닉스","isu_dcrs_de":"2000.06.02","isu_dcrs_stle":"주식분할","isu_dcrs_stock_knd":"보통주","isu_dcrs_qy":"3,240,000","isu_dcrs_mstvdv_fval_amount":"500","isu_dcrs_mstvdv_amount":"500"},
+                     {"rcept_no":"20190820000266","corp_cls":"K","corp_code":"00293886","corp_name":"위닉스","isu_dcrs_de":"2000.10.11","isu_dcrs_stle":"유상증자(일반공모)","isu_dcrs_stock_knd":"보통주","isu_dcrs_qy":"1,600,000","isu_dcrs_mstvdv_fval_amount":"500","isu_dcrs_mstvdv_amount":"500"}]}
+                 ----------------------------------------------------------------------*/
+
+                //// Descrialize
+                if (isXml)
+                {
+                    XmlSerializer reader = new XmlSerializer(typeof(ResIrdsSttusResult));
+                    ResIrdsSttusResult result = (ResIrdsSttusResult)reader.Deserialize(new MemoryStream(resData));
+                    result.displayConsole();
+                }
+                else
+                {
+                    resJson = Encoding.UTF8.GetString(resData);
+                    //ResIrdsSttusResult result = new ResIrdsSttusResult();
+                    ResIrdsSttusResult result = JsonSerializer.Deserialize<ResIrdsSttusResult>(resJson);
+                    result.displayConsole();
+                }
             }
             catch (WebException e)
             {

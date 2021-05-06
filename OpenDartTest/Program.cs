@@ -12,7 +12,7 @@ namespace OpenDartTest
 
             // Open DART API Key(https://opendart.fss.or.kr/ 에서 발급받아야함)
             OpenDartClient.Instance.apiKey = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
-            OpenDartClient.Instance.dummyDirectory = @"C:\Users\heenf\Desktop\dummy";
+            OpenDartClient.Instance.dummyDirectory = @"/home/lgh/project/public/dummy";
 
             //========================================================================
             // 공시정보 테스트 (REQ1_XXX)
@@ -28,7 +28,15 @@ namespace OpenDartTest
             // OpenDartClient.Instance.REQ1_3_GET_DOCUMENT("20190401004781");
 
             // 고유번호(전체 기업 종목코드 파일 다운로드 및 설정)
-            OpenDartClient.Instance.REQ1_4_GET_CORPCODE();
+            // OpenDartClient.Instance.REQ1_4_GET_CORPCODE();
+            //========================================================================
+
+            //========================================================================
+            // 사업보고서 주요정보 테스트 (REQ2_XXX)
+            //========================================================================
+            // 증자(감자) 현황, corp_code=00126380&bsns_year=2018&reprt_code=11011
+            OpenDartClient.Instance.REQ2_1_GET_IRDS_STTUS_INFO("00126380", "2018", "11011");
+
             //========================================================================
         }
     }
