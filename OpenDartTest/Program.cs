@@ -41,7 +41,10 @@ namespace OpenDartTest
             // OpenDartClient.Instance.REQ2_2_GET_ALOT_MATTER_INFO("00126380", "2018", "11011");
 
             // 2.3. 자기주식 취득 및 처분 현황, corp_code=00126380&bsns_year=2018&reprt_code=11011
-            OpenDartClient.Instance.REQ2_3_GET_TESSTK_ACQS_DSPS_STTUS_INFO("00126380", "2018", "11011");
+            // OpenDartClient.Instance.REQ2_3_GET_TESSTK_ACQS_DSPS_STTUS_INFO("00126380", "2018", "11011");
+
+            // 2.4. 최대주주 현황, corp_code=00126380&bsns_year=2018&reprt_code=11011
+            OpenDartClient.Instance.REQ2_4_GET_HYSLR_STTUS_INFO("00126380", "2018", "11011");
 
             //========================================================================
         }
