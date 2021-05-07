@@ -47,7 +47,10 @@ namespace OpenDartTest
             // OpenDartClient.Instance.REQ2_4_GET_HYSLR_STTUS_INFO("00126380", "2018", "11011");
 
             // 2.5. 최대주주 변동 현황, corp_code=00126380&bsns_year=2018&reprt_code=11011
-            OpenDartClient.Instance.REQ2_5_GET_HYSLR_CHG_STTUS_INFO("00126380", "2018", "11011");
+            // OpenDartClient.Instance.REQ2_5_GET_HYSLR_CHG_STTUS_INFO("00126380", "2018", "11011");
+
+            // 2.6. 소액주주현황, corp_code=00126380&bsns_year=2018&reprt_code=11011
+            OpenDartClient.Instance.REQ2_6_GET_MRHL_STTUS_INFO("00126380", "2018", "11011");
 
             //========================================================================
         }
