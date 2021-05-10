@@ -1,4 +1,4 @@
-# OpenDart (개발중...)
+# OpenDart (ing...)
 Open DART API C# library (https://opendart.fss.or.kr/)
 
 ## 소개
