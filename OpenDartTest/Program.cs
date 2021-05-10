@@ -75,7 +75,10 @@ namespace OpenDartTest
             // 3. 상장기업 재무정보 테스트 (REQ3_XXX)
             //========================================================================
             // 3.1. 단일회사 주요계정, corp_code=00126380&bsns_year=2018&reprt_code=11011
-            OpenDartClient.Instance.REQ3_1_GET_FNLTT_SINGL_ACNT_INFO("00126380", "2018", "11011");
+            // OpenDartClient.Instance.REQ3_1_GET_FNLTT_SINGL_ACNT_INFO("00126380", "2018", "11011");
+
+            // 3.2. 다중회사 주요계정, corp_code=00356370,00334624&bsns_year=2018&reprt_code=11011
+            OpenDartClient.Instance.REQ3_2_GET_FNLTT_MULTI_ACNT_INFO("00356370,00334624", "2018", "11011");
             //========================================================================
         }
     }
