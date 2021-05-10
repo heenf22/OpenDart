@@ -2488,5 +2488,156 @@ namespace OpenDart.OpenDartClient
 
             return true;
         }
+
+        /******************************************************************************************************************************************************
+         * Api Category : 2. 사업보고서 주요정보
+         * Api Name     : 2.12. 타법인 출자현황, https://opendart.fss.or.kr/guide/detail.do?apiGrpCd=DS002&apiId=2019015
+         * Description  : 정기보고서(사업, 분기, 반기보고서) 내에 타법인 출자현황을 제공합니다.
+         *              
+         * Request URL  : https://opendart.fss.or.kr/api/otrCprInvstmntSttus.json
+         *                https://opendart.fss.or.kr/api/otrCprInvstmntSttus.xml
+         * Request Parameter:
+         * 키	        명칭	        타입	        필수여부	    값설명
+         * crtfc_key	API 인증키	   STRING(40)	   Y	        발급받은 인증키(40자리)
+         * corp_code	고유번호	    STRING(8)	    Y	        공시대상회사의 고유번호(8자리)
+         *                                                          ※ 개발가이드 > 공시정보 > 고유번호 API조회 가능
+         * bsns_year	사업연도	    STRING(4)	    Y	        사업연도(4자리)
+         *                                                          ※ 2015년 이후 부터 정보제공
+         * reprt_code	보고서 코드	    STRING(5)	    Y	        1분기보고서 : 11013
+         *                                                      반기보고서 : 11012
+         *                                                      3분기보고서 : 11014
+         *                                                      사업보고서 : 11011
+         * Response Result: ResIndvdlByPayResult
+         * 
+         * Response Status:
+         *  - 000 :정상
+         *  - 010 :등록되지 않은 키입니다.
+         *  - 011 :사용할 수 없는 키입니다. 오픈API에 등록되었으나, 일시적으로 사용 중지된 키를 통하여 검색하는 경우 발생합니다.
+         *  - 020 :요청 제한을 초과하였습니다.
+         *         일반적으로는 10,000건 이상의 요청에 대하여 이 에러 메시지가 발생되나, 요청 제한이 다르게 설정된 경우에는 이에 준하여 발생됩니다.
+         *  - 100 :필드의 부적절한 값입니다.필드 설명에 없는 값을 사용한 경우에 발생하는 메시지입니다.
+         *  - 800 :원활한 공시서비스를 위하여 오픈API 서비스가 중지 중입니다.
+         *  - 900 :정의되지 않은 오류가 발생하였습니다.
+         *  string status = response.GetResponseHeader("status");
+         *  string message = response.GetResponseHeader("message");
+         */
+        public bool REQ2_12_GET_OTR_CPR_INVSTMNT_STTUS_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
+        {
+            DebugBeginProtocol("REQ2_12_GET_OTR_CPR_INVSTMNT_STTUS_INFO");
+
+            try
+            {
+                string reqJson = string.Empty;
+                string resJson = string.Empty;
+
+                /*------------------------------------------------->>Request param
+                https://opendart.fss.or.kr/api/otrCprInvstmntSttus.json?crtfc_key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&corp_code=00126380&bsns_year=2018&reprt_code=11011
+                 ----------------------------------------------------------------------*/
+                // Serialize
+                byte[] reqData = Encoding.UTF8.GetBytes(reqJson);
+
+                // HTTP Request
+                string reqParam = string.Empty;
+                if (string.IsNullOrEmpty(apiKey))
+                {
+                    Console.WriteLine("Could not find the api key. Please set the api key.");
+                    return false;
+                }
+                reqParam += "?crtfc_key=" + apiKey;
+                if (!string.IsNullOrEmpty(corp_code)) reqParam += "&corp_code=" + corp_code;
+                if (!string.IsNullOrEmpty(bsns_year)) reqParam += "&bsns_year=" + bsns_year;
+                if (!string.IsNullOrEmpty(reprt_code)) reqParam += "&reprt_code=" + reprt_code;
+
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(apiUri + "/otrCprInvstmntSttus." + (isXml ? "xml" : "json") + reqParam);
+                request.ProtocolVersion = HttpVersion.Version11;
+                if (useProxy)
+                {
+                    request.Proxy = new WebProxy(proxyIp, proxyPort);
+                }
+                //request.Credentials = CredentialCache.DefaultCredentials;
+                //request.CookieContainer = new CookieContainer();
+                //if (cookiecollection != null) request.CookieContainer.Add(cookiecollection);
+                request.Method = "GET";
+                request.KeepAlive = false;
+                request.AllowAutoRedirect = false;
+                request.Timeout = timeOut * 1000;
+                request.UserAgent = "Stock Valuator Client";
+                request.ContentType = "application/json; charset=utf-8";
+                request.ContentLength = reqData.Length;
+                // request.Headers["X-Result-Message"] = "OK";
+                if (reqData.Length > 0 && request.Method != "GET")
+                {
+                    Stream dataStream = request.GetRequestStream();
+                    dataStream.Write(reqData, 0, reqData.Length);
+                    dataStream.Close();
+                }
+                DebugRequest(request, reqData, true);
+
+                // HTTP Response
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                MemoryStream ms = new MemoryStream();
+                response.GetResponseStream().CopyTo(ms);
+                byte[] resData = ms.ToArray();
+                DebugResponse(response, resData, true);
+                ms.Close();
+                response.Close();
+
+                /*------------------------------------------------<<Response JSON format
+                 {"status":"000","message":"정상","list":[
+                     {"rcept_no":"20190820000266",
+                      "corp_cls":"K",
+                      "corp_code":"00293886",
+                      "corp_name":"위닉스",
+                      "inv_prm":"유원전자(소주)\n유한공사(비상장)",
+                      "frst_acqs_de":"1997.04.18",
+                      "invstmnt_purps":"계열회사",
+                      "frst_acqs_amount":"4,832,000,000",
+                      "bsis_blce_qy":"0",
+                      "bsis_blce_qota_rt":"100",
+                      "bsis_blce_acntbk_amount":"8,551,000,000",
+                      "incrs_dcrs_acqs_dsps_qy":"0",
+                      "incrs_dcrs_acqs_dsps_amount":"0",
+                      "incrs_dcrs_evl_lstmn":"0",
+                      "trmend_blce_qy":"0",
+                      "trmend_blce_qota_rt":"100",
+                      "trmend_blce_acntbk_amount":"8,551,000,000",
+                      "recent_bsns_year_fnnr_sttus_tot_assets":"10,465,000,000",
+                      "recent_bsns_year_fnnr_sttus_thstrm_ntpf":"-909,000,000"},
+                    {"rcept_no":"20190820000266","corp_cls":"K","corp_code":"00293886","corp_name":"위닉스","inv_prm":"YooWon\nElectronics\nCo.,LTD(비상장)","frst_acqs_de":"2004.07.22","invstmnt_purps":"계열회사","frst_acqs_amount":"2,046,000,000","bsis_blce_qy":"49,994","bsis_blce_qota_rt":"99.99","bsis_blce_acntbk_amount":"726,000,000","incrs_dcrs_acqs_dsps_qy":"0","incrs_dcrs_acqs_dsps_amount":"0","incrs_dcrs_evl_lstmn":"0","trmend_blce_qy":"49,994","trmend_blce_qota_rt":"99.99","trmend_blce_acntbk_amount":"726,000,000","recent_bsns_year_fnnr_sttus_tot_assets":"8,031,000,000","recent_bsns_year_fnnr_sttus_thstrm_ntpf":"803,000,000"},{"rcept_no":"20190820000266","corp_cls":"K","corp_code":"00293886","corp_name":"위닉스","inv_prm":"Winix \nElectronics\nCo.,LTD(비상장)","frst_acqs_de":"2010.12.22","invstmnt_purps":"계열회사","frst_acqs_amount":"771,000,000","bsis_blce_qy":"59,994","bsis_blce_qota_rt":"99.99","bsis_blce_acntbk_amount":"2,225,000,000","incrs_dcrs_acqs_dsps_qy":"31,004","incrs_dcrs_acqs_dsps_amount":"1,050,000,000","incrs_dcrs_evl_lstmn":"-1,000,000","trmend_blce_qy":"90,998","trmend_blce_qota_rt":"99.99","trmend_blce_acntbk_amount":"3,275,000,000","recent_bsns_year_fnnr_sttus_tot_assets":"12,424,000,000","recent_bsns_year_fnnr_sttus_thstrm_ntpf":"136,000,000"},{"rcept_no":"20190820000266","corp_cls":"K","corp_code":"00293886","corp_name":"위닉스","inv_prm":"WINIX\nAMERICA INC(비상장)","frst_acqs_de":"2014.08.01","invstmnt_purps":"계열회사","frst_acqs_amount":"543,000,000","bsis_blce_qy":"100","bsis_blce_qota_rt":"100","bsis_blce_acntbk_amount":"543,000,000","incrs_dcrs_acqs_dsps_qy":"8,000","incrs_dcrs_acqs_dsps_amount":"4,286,000,000","incrs_dcrs_evl_lstmn":"200,000,000","trmend_blce_qy":"8,100","trmend_blce_qota_rt":"100","trmend_blce_acntbk_amount":"4,829,000,000","recent_bsns_year_fnnr_sttus_tot_assets":"27,709,000,000","recent_bsns_year_fnnr_sttus_thstrm_ntpf":"262,000,000"},{"rcept_no":"20190820000266","corp_cls":"K","corp_code":"00293886","corp_name":"위닉스","inv_prm":"WINIX\nEUROPE BV(비상장)","frst_acqs_de":"2014.08.01","invstmnt_purps":"계열회사","frst_acqs_amount":"430,000,000","bsis_blce_qy":"1","bsis_blce_qota_rt":"100","bsis_blce_acntbk_amount":"430,000,000","incrs_dcrs_acqs_dsps_qy":"0","incrs_dcrs_acqs_dsps_amount":"0","incrs_dcrs_evl_lstmn":"0","trmend_blce_qy":"1","trmend_blce_qota_rt":"100","trmend_blce_acntbk_amount":"430,000,000","recent_bsns_year_fnnr_sttus_tot_assets":"3,316,000,000","recent_bsns_year_fnnr_sttus_thstrm_ntpf":"415,000,000"},{"rcept_no":"20190820000266","corp_cls":"K","corp_code":"00293886","corp_name":"위닉스","inv_prm":"Suzhou Yoowon\nTrade Co., LTD(비상장)","frst_acqs_de":"2015.03.25","invstmnt_purps":"계열회사","frst_acqs_amount":"0","bsis_blce_qy":"0","bsis_blce_qota_rt":"0","bsis_blce_acntbk_amount":"0","incrs_dcrs_acqs_dsps_qy":"0","incrs_dcrs_acqs_dsps_amount":"147,000,000","incrs_dcrs_evl_lstmn":"-3,000,000","trmend_blce_qy":"0","trmend_blce_qota_rt":"100","trmend_blce_acntbk_amount":"144,000,000","recent_bsns_year_fnnr_sttus_tot_assets":"534,000,000","recent_bsns_year_fnnr_sttus_thstrm_ntpf":"53,000,000"},{"rcept_no":"20190820000266","corp_cls":"K","corp_code":"00293886","corp_name":"위닉스","inv_prm":"Chuzhou Yoowon Cooling\nTechnology Co., Ltd(비상장)","frst_acqs_de":"2017.11.23","invstmnt_purps":"계열회사","frst_acqs_amount":"0","bsis_blce_qy":"0","bsis_blce_qota_rt":"0","bsis_blce_acntbk_amount":"0","incrs_dcrs_acqs_dsps_qy":"0","incrs_dcrs_acqs_dsps_amount":"50,000,000","incrs_dcrs_evl_lstmn":"-1,000,000","trmend_blce_qy":"0","trmend_blce_qota_rt":"100","trmend_blce_acntbk_amount":"51,000,000","recent_bsns_year_fnnr_sttus_tot_assets":"34,000,000","recent_bsns_year_fnnr_sttus_thstrm_ntpf":"-36,000,000"},{"rcept_no":"20190820000266","corp_cls":"K","corp_code":"00293886","corp_name":"위닉스","inv_prm":"합계","frst_acqs_de":"-","invstmnt_purps":"-","frst_acqs_amount":"-","bsis_blce_qy":"110,089","bsis_blce_qota_rt":"0","bsis_blce_acntbk_amount":"12,475,000,000","incrs_dcrs_acqs_dsps_qy":"39,004","incrs_dcrs_acqs_dsps_amount":"5,533,000,000","incrs_dcrs_evl_lstmn":"195,000,000","trmend_blce_qy":"149,093","trmend_blce_qota_rt":"0","trmend_blce_acntbk_amount":"18,006,000,000","recent_bsns_year_fnnr_sttus_tot_assets":"62,514,000,000","recent_bsns_year_fnnr_sttus_thstrm_ntpf":"724,000,000"}]}
+                 ----------------------------------------------------------------------*/
+
+                //// Descrialize
+                if (isXml)
+                {
+                    XmlSerializer reader = new XmlSerializer(typeof(ResOtrCprInvstmntSttusResult));
+                    ResOtrCprInvstmntSttusResult result = (ResOtrCprInvstmntSttusResult)reader.Deserialize(new MemoryStream(resData));
+                    result.displayConsole();
+                }
+                else
+                {
+                    resJson = Encoding.UTF8.GetString(resData);
+                    ResOtrCprInvstmntSttusResult result = JsonSerializer.Deserialize<ResOtrCprInvstmntSttusResult>(resJson);
+                    result.displayConsole();
+                }
+            }
+            catch (WebException e)
+            {
+                displayWebException(e);
+                return false;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("*******************************************************************************");
+                Console.WriteLine("!!! EXCEPTION: " + e.Message);
+                Console.WriteLine("*******************************************************************************");
+                return false;
+            }
+            finally
+            {
+                DebugEndProtocol();
+            }
+
+            return true;
+        }
     }
 }
