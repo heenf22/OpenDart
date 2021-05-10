@@ -56,7 +56,10 @@ namespace OpenDartTest
             // OpenDartClient.Instance.REQ2_7_GET_EXCTV_STTUS_INFO("00126380", "2018", "11011");
 
             // 2.8. 직원현황, corp_code=00126380&bsns_year=2018&reprt_code=11011
-            OpenDartClient.Instance.REQ2_8_GET_EMP_STTUS_INFO("00126380", "2018", "11011");
+            // OpenDartClient.Instance.REQ2_8_GET_EMP_STTUS_INFO("00126380", "2018", "11011");
+
+            // 2.9. 이사ㆍ감사의 개인별 보수 현황, corp_code=00126380&bsns_year=2018&reprt_code=11011
+            OpenDartClient.Instance.REQ2_9_GET_HMV_AUDIT_INDVDL_BY_STTUS_INFO("00126380", "2018", "11011");
 
             //========================================================================
         }
