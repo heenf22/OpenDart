@@ -2639,5 +2639,157 @@ namespace OpenDart.OpenDartClient
 
             return true;
         }
+
+        /******************************************************************************************************************************************************
+         * Api Category : 3. 상장기업 재무정보
+         * Api Name     : 3.1. 단일회사 주요계정, https://opendart.fss.or.kr/guide/detail.do?apiGrpCd=DS003&apiId=2019016
+         * Description  : 상장법인(금융업 제외)이 제출한 정기보고서 내에 XBRL재무제표의 주요계정과목(재무상태표, 손익계산서)을 제공합니다.
+         *              
+         * Request URL  : https://opendart.fss.or.kr/api/fnlttSinglAcnt.json
+         *                https://opendart.fss.or.kr/api/fnlttSinglAcnt.xml
+         * Request Parameter:
+         * 키	        명칭	        타입	        필수여부	    값설명
+         * crtfc_key	API 인증키	   STRING(40)	   Y	        발급받은 인증키(40자리)
+         * corp_code	고유번호	    STRING(8)	    Y	        공시대상회사의 고유번호(8자리)
+         *                                                          ※ 개발가이드 > 공시정보 > 고유번호 API조회 가능
+         * bsns_year	사업연도	    STRING(4)	    Y	        사업연도(4자리)
+         *                                                          ※ 2015년 이후 부터 정보제공
+         * reprt_code	보고서 코드	    STRING(5)	    Y	        1분기보고서 : 11013
+         *                                                      반기보고서 : 11012
+         *                                                      3분기보고서 : 11014
+         *                                                      사업보고서 : 11011
+         * Response Result: ResFnlttSinglAcntResult
+         * 
+         * Response Status:
+         *  - 000 :정상
+         *  - 010 :등록되지 않은 키입니다.
+         *  - 011 :사용할 수 없는 키입니다. 오픈API에 등록되었으나, 일시적으로 사용 중지된 키를 통하여 검색하는 경우 발생합니다.
+         *  - 020 :요청 제한을 초과하였습니다.
+         *         일반적으로는 10,000건 이상의 요청에 대하여 이 에러 메시지가 발생되나, 요청 제한이 다르게 설정된 경우에는 이에 준하여 발생됩니다.
+         *  - 100 :필드의 부적절한 값입니다.필드 설명에 없는 값을 사용한 경우에 발생하는 메시지입니다.
+         *  - 800 :원활한 공시서비스를 위하여 오픈API 서비스가 중지 중입니다.
+         *  - 900 :정의되지 않은 오류가 발생하였습니다.
+         *  string status = response.GetResponseHeader("status");
+         *  string message = response.GetResponseHeader("message");
+         */
+        public bool REQ3_1_GET_FNLTT_SINGL_ACNT_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
+        {
+            DebugBeginProtocol("REQ3_1_GET_FNLTT_SINGL_ACNT_INFO");
+
+            try
+            {
+                string reqJson = string.Empty;
+                string resJson = string.Empty;
+
+                /*------------------------------------------------->>Request param
+                https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?crtfc_key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&corp_code=00126380&bsns_year=2018&reprt_code=11011
+                 ----------------------------------------------------------------------*/
+                // Serialize
+                byte[] reqData = Encoding.UTF8.GetBytes(reqJson);
+
+                // HTTP Request
+                string reqParam = string.Empty;
+                if (string.IsNullOrEmpty(apiKey))
+                {
+                    Console.WriteLine("Could not find the api key. Please set the api key.");
+                    return false;
+                }
+                reqParam += "?crtfc_key=" + apiKey;
+                if (!string.IsNullOrEmpty(corp_code)) reqParam += "&corp_code=" + corp_code;
+                if (!string.IsNullOrEmpty(bsns_year)) reqParam += "&bsns_year=" + bsns_year;
+                if (!string.IsNullOrEmpty(reprt_code)) reqParam += "&reprt_code=" + reprt_code;
+
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(apiUri + "/fnlttSinglAcnt." + (isXml ? "xml" : "json") + reqParam);
+                request.ProtocolVersion = HttpVersion.Version11;
+                if (useProxy)
+                {
+                    request.Proxy = new WebProxy(proxyIp, proxyPort);
+                }
+                //request.Credentials = CredentialCache.DefaultCredentials;
+                //request.CookieContainer = new CookieContainer();
+                //if (cookiecollection != null) request.CookieContainer.Add(cookiecollection);
+                request.Method = "GET";
+                request.KeepAlive = false;
+                request.AllowAutoRedirect = false;
+                request.Timeout = timeOut * 1000;
+                request.UserAgent = "Stock Valuator Client";
+                request.ContentType = "application/json; charset=utf-8";
+                request.ContentLength = reqData.Length;
+                // request.Headers["X-Result-Message"] = "OK";
+                if (reqData.Length > 0 && request.Method != "GET")
+                {
+                    Stream dataStream = request.GetRequestStream();
+                    dataStream.Write(reqData, 0, reqData.Length);
+                    dataStream.Close();
+                }
+                DebugRequest(request, reqData, true);
+
+                // HTTP Response
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                MemoryStream ms = new MemoryStream();
+                response.GetResponseStream().CopyTo(ms);
+                byte[] resData = ms.ToArray();
+                DebugResponse(response, resData, true);
+                ms.Close();
+                response.Close();
+
+                /*------------------------------------------------<<Response JSON format
+                 {"status":"000","message":"정상","list":[
+                     {"rcept_no":"20190401004781",
+                      "reprt_code":"11011",
+                      "bsns_year":"2018",
+                      "corp_code":"00126380",
+                      "stock_code":"005930",
+                      "fs_div":"CFS",
+                      "fs_nm":"연결재무제표",
+                      "sj_div":"BS",
+                      "sj_nm":"재무상태표",
+                      "account_nm":"유동자산",
+                      "thstrm_nm":"제 50 기",
+                      "thstrm_dt":"2018.12.31 현재",
+                      "thstrm_amount":"174,697,424,000,000",
+                      "frmtrm_nm":"제 49 기",
+                      "frmtrm_dt":"2017.12.31 현재",
+                      "frmtrm_amount":"146,982,464,000,000",
+                      "bfefrmtrm_nm":"제 48 기",
+                      "bfefrmtrm_dt":"2016.12.31 현재",
+                      "bfefrmtrm_amount":"141,429,704,000,000",
+                      "ord":"1"},
+                    {"rcept_no":"20190401004781","reprt_code":"11011","bsns_year":"2018","corp_code":"00126380","stock_code":"005930","fs_div":"CFS","fs_nm":"연결재무제표","sj_div":"BS","sj_nm":"재무상태표","account_nm":"비유동자산","thstrm_nm":"제 50 기","thstrm_dt":"2018.12.31 현재","thstrm_amount":"164,659,820,000,000","frmtrm_nm":"제 49 기","frmtrm_dt":"2017.12.31 현재","frmtrm_amount":"154,769,626,000,000","bfefrmtrm_nm":"제 48 기","bfefrmtrm_dt":"2016.12.31 현재","bfefrmtrm_amount":"120,744,620,000,000","ord":"3"},{"rcept_no":"20190401004781","reprt_code":"11011","bsns_year":"2018","corp_code":"00126380","stock_code":"005930","fs_div":"CFS","fs_nm":"연결재무제표","sj_div":"BS","sj_nm":"재무상태표","account_nm":"자산총계","thstrm_nm":"제 50 기","thstrm_dt":"2018.12.31 현재","thstrm_amount":"339,357,244,000,000","frmtrm_nm":"제 49 기","frmtrm_dt":"2017.12.31 현재","frmtrm_amount":"301,752,090,000,000","bfefrmtrm_nm":"제 48 기","bfefrmtrm_dt":"2016.12.31 현재","bfefrmtrm_amount":"262,174,324,000,000","ord":"5"},{"rcept_no":"20190401004781","reprt_code":"11011","bsns_year":"2018","corp_code":"00126380","stock_code":"005930","fs_div":"CFS","fs_nm":"연결재무제표","sj_div":"BS","sj_nm":"재무상태표","account_nm":"유동부채","thstrm_nm":"제 50 기","thstrm_dt":"2018.12.31 현재","thstrm_amount":"69,081,510,000,000","frmtrm_nm":"제 49 기","frmtrm_dt":"2017.12.31 현재","frmtrm_amount":"67,175,114,000,000","bfefrmtrm_nm":"제 48 기","bfefrmtrm_dt":"2016.12.31 현재","bfefrmtrm_amount":"54,704,095,000,000","ord":"7"},{"rcept_no":"20190401004781","reprt_code":"11011","bsns_year":"2018","corp_code":"00126380","stock_code":"005930","fs_div":"CFS","fs_nm":"연결재무제표","sj_div":"BS","sj_nm":"재무상태표","account_nm":"비유동부채","thstrm_nm":"제 50 기","thstrm_dt":"2018.12.31 현재","thstrm_amount":"22,522,557,000,000","frmtrm_nm":"제 49 기","frmtrm_dt":"2017.12.31 현재","frmtrm_amount":"20,085,548,000,000","bfefrmtrm_nm":"제 48 기","bfefrmtrm_dt":"2016.12.31 현재","bfefrmtrm_amount":"14,507,196,000,000","ord":"9"},{"rcept_no":"20190401004781","reprt_code":"11011","bsns_year":"2018","corp_code":"00126380","stock_code":"005930","fs_div":"CFS","fs_nm":"연결재무제표","sj_div":"BS","sj_nm":"재무상태표","account_nm":"부채총계","thstrm_nm":"제 50 기","thstrm_dt":"2018.12.31 현재","thstrm_amount":"91,604,067,000,000","frmtrm_nm":"제 49 기","frmtrm_dt":"2017.12.31 현재","frmtrm_amount":"87,260,662,000,000","bfefrmtrm_nm":"제 48 기","bfefrmtrm_dt":"2016.12.31 현재","bfefrmtrm_amount":"69,211,291,000,000","ord":"11"},{"rcept_no":"20190401004781","reprt_code":"11011","bsns_year":"2018","corp_code":"00126380","stock_code":"005930","fs_div":"CFS","fs_nm":"연결재무제표","sj_div":"BS","sj_nm":"재무상태표","account_nm":"자본금","thstrm_nm":"제 50 기","thstrm_dt":"2018.12.31 현재","thstrm_amount":"897,514,000,000","frmtrm_nm":"제 49 기","frmtrm_dt":"2017.12.31 현재","frmtrm_amount":"897,514,000,000","bfefrmtrm_nm":"제 48 기","bfefrmtrm_dt":"2016.12.31 현재","bfefrmtrm_amount":"897,514,000,000","ord":"13"},{"rcept_no":"20190401004781","reprt_code":"11011","bsns_year":"2018","corp_code":"00126380","stock_code":"005930","fs_div":"CFS","fs_nm":"연결재무제표","sj_div":"BS","sj_nm":"재무상태표","account_nm":"이익잉여금","thstrm_nm":"제 50 기","thstrm_dt":"2018.12.31 현재","thstrm_amount":"242,698,956,000,000","frmtrm_nm":"제 49 기","frmtrm_dt":"2017.12.31 현재","frmtrm_amount":"215,811,200,000,000","bfefrmtrm_nm":"제 48 기","bfefrmtrm_dt":"2016.12.31 현재","bfefrmtrm_amount":"193,086,317,000,000","ord":"17"},{"rcept_no":"20190401004781","reprt_code":"11011","bsns_year":"2018","corp_code":"00126380","stock_code":"005930","fs_div":"CFS","fs_nm":"연결재무제표","sj_div":"BS","sj_nm":"재무상태표","account_nm":"자본총계","thstrm_nm":"제 50 기","thstrm_dt":"2018.12.31 현재","thstrm_amount":"247,753,177,000,000","frmtrm_nm":"제 49 기","frmtrm_dt":"2017.12.31 현재","frmtrm_amount":"214,491,428,000,000","bfefrmtrm_nm":"제 48 기","bfefrmtrm_dt":"2016.12.31 현재","bfefrmtrm_amount":"192,963,033,000,000","ord":"21"},{"rcept_no":"20190401004781","reprt_code":"11011","bsns_year":"2018","corp_code":"00126380","stock_code":"005930","fs_div":"CFS","fs_nm":"연결재무제표","sj_div":"IS","sj_nm":"손익계산서","account_nm":"매출액","thstrm_nm":"제 50 기","thstrm_dt":"2018.01.01 ~ 2018.12.31","thstrm_amount":"243,771,415,000,000","frmtrm_nm":"제 49 기","frmtrm_dt":"2017.01.01 ~ 2017.12.31","frmtrm_amount":"239,575,376,000,000","bfefrmtrm_nm":"제 48 기","bfefrmtrm_dt":"2016.01.01 ~ 2016.12.31","bfefrmtrm_amount":"201,866,745,000,000","ord":"23"},{"rcept_no":"20190401004781","reprt_code":"11011","bsns_year":"2018","corp_code":"00126380","stock_code":"005930","fs_div":"CFS","fs_nm":"연결재무제표","sj_div":"IS","sj_nm":"손익계산서","account_nm":"영업이익","thstrm_nm":"제 50 기","thstrm_dt":"2018.01.01 ~ 2018.12.31","thstrm_amount":"58,886,669,000,000","frmtrm_nm":"제 49 기","frmtrm_dt":"2017.01.01 ~ 2017.12.31","frmtrm_amount":"53,645,038,000,000","bfefrmtrm_nm":"제 48 기","bfefrmtrm_dt":"2016.01.01 ~ 2016.12.31","bfefrmtrm_amount":"29,240,672,000,000","ord":"25"},{"rcept_no":"20190401004781","reprt_code":"11011","bsns_year":"2018","corp_code":"00126380","stock_code":"005930","fs_div":"CFS","fs_nm":"연결재무제표","sj_div":"IS","sj_nm":"손익계산서","account_nm":"법인세차감전 순이익","thstrm_nm":"제 50 기","thstrm_dt":"2018.01.01 ~ 2018.12.31","thstrm_amount":"61,159,958,000,000","frmtrm_nm":"제 49 기","frmtrm_dt":"2017.01.01 ~ 2017.12.31","frmtrm_amount":"56,195,967,000,000","bfefrmtrm_nm":"제 48 기","bfefrmtrm_dt":"2016.01.01 ~ 2016.12.31","bfefrmtrm_amount":"30,713,652,000,000","ord":"27"},{"rcept_no":"20190401004781","reprt_code":"11011","bsns_year":"2018","corp_code":"00126380","stock_code":"005930","fs_div":"CFS","fs_nm":"연결재무제표","sj_div":"IS","sj_nm":"손익계산서","account_nm":"당기순이익","thstrm_nm":"제 50 기","thstrm_dt":"2018.01.01 ~ 2018.12.31","thstrm_amount":"44,344,857,000,000","frmtrm_nm":"제 49 기","frmtrm_dt":"2017.01.01 ~ 2017.12.31","frmtrm_amount":"42,186,747,000,000","bfefrmtrm_nm":"제 48 기","bfefrmtrm_dt":"2016.01.01 ~ 2016.12.31","bfefrmtrm_amount":"22,726,092,000,000","ord":"29"},{"rcept_no":"20190401004781","reprt_code":"11011","bsns_year":"2018","corp_code":"00126380","stock_code":"005930","fs_div":"OFS","fs_nm":"재무제표","sj_div":"BS","sj_nm":"재무상태표","account_nm":"유동자산","thstrm_nm":"제 50 기","thstrm_dt":"2018.12.31 현재","thstrm_amount":"80,039,455,000,000","frmtrm_nm":"제 49 기","frmtrm_dt":"2017.12.31 현재","frmtrm_amount":"70,155,189,000,000","bfefrmtrm_nm":"제 48 기","bfefrmtrm_dt":"2016.12.31 현재","bfefrmtrm_amount":"69,981,128,000,000","ord":"2"},{"rcept_no":"20190401004781","reprt_code":"11011","bsns_year":"2018","corp_code":"00126380","stock_code":"005930","fs_div":"OFS","fs_nm":"재무제표","sj_div":"BS","sj_nm":"재무상태표","account_nm":"비유동자산","thstrm_nm":"제 50 기","thstrm_dt":"2018.12.31 현재","thstrm_amount":"138,981,902,000,000","frmtrm_nm":"제 49 기","frmtrm_dt":"2017.12.31 현재","frmtrm_amount":"128,086,171,000,000","bfefrmtrm_nm":"제 48 기","bfefrmtrm_dt":"2016.12.31 현재","bfefrmtrm_amount":"104,821,831,000,000","ord":"4"},{"rcept_no":"20190401004781","reprt_code":"11011","bsns_year":"2018","corp_code":"00126380","stock_code":"005930","fs_div":"OFS","fs_nm":"재무제표","sj_div":"BS","sj_nm":"재무상태표","account_nm":"자산총계","thstrm_nm":"제 50 기","thstrm_dt":"2018.12.31 현재","thstrm_amount":"219,021,357,000,000","frmtrm_nm":"제 49 기","frmtrm_dt":"2017.12.31 현재","frmtrm_amount":"198,241,360,000,000","bfefrmtrm_nm":"제 48 기","bfefrmtrm_dt":"2016.12.31 현재","bfefrmtrm_amount":"174,802,959,000,000","ord":"6"},{"rcept_no":"20190401004781","reprt_code":"11011","bsns_year":"2018","corp_code":"00126380","stock_code":"005930","fs_div":"OFS","fs_nm":"재무제표","sj_div":"BS","sj_nm":"재무상태표","account_nm":"유동부채","thstrm_nm":"제 50 기","thstrm_dt":"2018.12.31 현재","thstrm_amount":"43,145,053,000,000","frmtrm_nm":"제 49 기","frmtrm_dt":"2017.12.31 현재","frmtrm_amount":"44,495,084,000,000","bfefrmtrm_nm":"제 48 기","bfefrmtrm_dt":"2016.12.31 현재","bfefrmtrm_amount":"34,076,122,000,000","ord":"8"},{"rcept_no":"20190401004781","reprt_code":"11011","bsns_year":"2018","corp_code":"00126380","stock_code":"005930","fs_div":"OFS","fs_nm":"재무제표","sj_div":"BS","sj_nm":"재무상태표","account_nm":"비유동부채","thstrm_nm":"제 50 기","thstrm_dt":"2018.12.31 현재","thstrm_amount":"2,888,179,000,000","frmtrm_nm":"제 49 기","frmtrm_dt":"2017.12.31 현재","frmtrm_amount":"2,176,501,000,000","bfefrmtrm_nm":"제 48 기","bfefrmtrm_dt":"2016.12.31 현재","bfefrmtrm_amount":"3,180,075,000,000","ord":"10"},{"rcept_no":"20190401004781","reprt_code":"11011","bsns_year":"2018","corp_code":"00126380","stock_code":"005930","fs_div":"OFS","fs_nm":"재무제표","sj_div":"BS","sj_nm":"재무상태표","account_nm":"부채총계","thstrm_nm":"제 50 기","thstrm_dt":"2018.12.31 현재","thstrm_amount":"46,033,232,000,000","frmtrm_nm":"제 49 기","frmtrm_dt":"2017.12.31 현재","frmtrm_amount":"46,671,585,000,000","bfefrmtrm_nm":"제 48 기","bfefrmtrm_dt":"2016.12.31 현재","bfefrmtrm_amount":"37,256,197,000,000","ord":"12"},{"rcept_no":"20190401004781","reprt_code":"11011","bsns_year":"2018","corp_code":"00126380","stock_code":"005930","fs_div":"OFS","fs_nm":"재무제표","sj_div":"BS","sj_nm":"재무상태표","account_nm":"자본금","thstrm_nm":"제 50 기","thstrm_dt":"2018.12.31 현재","thstrm_amount":"897,514,000,000","frmtrm_nm":"제 49 기","frmtrm_dt":"2017.12.31 현재","frmtrm_amount":"897,514,000,000","bfefrmtrm_nm":"제 48 기","bfefrmtrm_dt":"2016.12.31 현재","bfefrmtrm_amount":"897,514,000,000","ord":"15"},{"rcept_no":"20190401004781","reprt_code":"11011","bsns_year":"2018","corp_code":"00126380","stock_code":"005930","fs_div":"OFS","fs_nm":"재무제표","sj_div":"BS","sj_nm":"재무상태표","account_nm":"이익잉여금","thstrm_nm":"제 50 기","thstrm_dt":"2018.12.31 현재","thstrm_amount":"166,555,532,000,000","frmtrm_nm":"제 49 기","frmtrm_dt":"2017.12.31 현재","frmtrm_amount":"150,928,724,000,000","bfefrmtrm_nm":"제 48 기","bfefrmtrm_dt":"2016.12.31 현재","bfefrmtrm_amount":"140,747,574,000,000","ord":"19"},{"rcept_no":"20190401004781","reprt_code":"11011","bsns_year":"2018","corp_code":"00126380","stock_code":"005930","fs_div":"OFS","fs_nm":"재무제표","sj_div":"BS","sj_nm":"재무상태표","account_nm":"자본총계","thstrm_nm":"제 50 기","thstrm_dt":"2018.12.31 현재","thstrm_amount":"172,988,125,000,000","frmtrm_nm":"제 49 기","frmtrm_dt":"2017.12.31 현재","frmtrm_amount":"151,569,775,000,000","bfefrmtrm_nm":"제 48 기","bfefrmtrm_dt":"2016.12.31 현재","bfefrmtrm_amount":"137,546,762,000,000","ord":"22"},{"rcept_no":"20190401004781","reprt_code":"11011","bsns_year":"2018","corp_code":"00126380","stock_code":"005930","fs_div":"OFS","fs_nm":"재무제표","sj_div":"IS","sj_nm":"손익계산서","account_nm":"매출액","thstrm_nm":"제 50 기","thstrm_dt":"2018.01.01 ~ 2018.12.31","thstrm_amount":"170,381,870,000,000","frmtrm_nm":"제 49 기","frmtrm_dt":"2017.01.01 ~ 2017.12.31","frmtrm_amount":"161,915,007,000,000","bfefrmtrm_nm":"제 48 기","bfefrmtrm_dt":"2016.01.01 ~ 2016.12.31","bfefrmtrm_amount":"133,947,204,000,000","ord":"24"},{"rcept_no":"20190401004781","reprt_code":"11011","bsns_year":"2018","corp_code":"00126380","stock_code":"005930","fs_div":"OFS","fs_nm":"재무제표","sj_div":"IS","sj_nm":"손익계산서","account_nm":"영업이익","thstrm_nm":"제 50 기","thstrm_dt":"2018.01.01 ~ 2018.12.31","thstrm_amount":"43,699,451,000,000","frmtrm_nm":"제 49 기","frmtrm_dt":"2017.01.01 ~ 2017.12.31","frmtrm_amount":"34,857,091,000,000","bfefrmtrm_nm":"제 48 기","bfefrmtrm_dt":"2016.01.01 ~ 2016.12.31","bfefrmtrm_amount":"13,647,436,000,000","ord":"26"},{"rcept_no":"20190401004781","reprt_code":"11011","bsns_year":"2018","corp_code":"00126380","stock_code":"005930","fs_div":"OFS","fs_nm":"재무제표","sj_div":"IS","sj_nm":"손익계산서","account_nm":"법인세차감전 순이익","thstrm_nm":"제 50 기","thstrm_dt":"2018.01.01 ~ 2018.12.31","thstrm_amount":"44,398,855,000,000","frmtrm_nm":"제 49 기","frmtrm_dt":"2017.01.01 ~ 2017.12.31","frmtrm_amount":"36,533,552,000,000","bfefrmtrm_nm":"제 48 기","bfefrmtrm_dt":"2016.01.01 ~ 2016.12.31","bfefrmtrm_amount":"14,725,074,000,000","ord":"28"},{"rcept_no":"20190401004781","reprt_code":"11011","bsns_year":"2018","corp_code":"00126380","stock_code":"005930","fs_div":"OFS","fs_nm":"재무제표","sj_div":"IS","sj_nm":"손익계산서","account_nm":"당기순이익","thstrm_nm":"제 50 기","thstrm_dt":"2018.01.01 ~ 2018.12.31","thstrm_amount":"32,815,127,000,000","frmtrm_nm":"제 49 기","frmtrm_dt":"2017.01.01 ~ 2017.12.31","frmtrm_amount":"28,800,837,000,000","bfefrmtrm_nm":"제 48 기","bfefrmtrm_dt":"2016.01.01 ~ 2016.12.31","bfefrmtrm_amount":"11,579,749,000,000","ord":"30"}]}
+                 ----------------------------------------------------------------------*/
+
+                //// Descrialize
+                if (isXml)
+                {
+                    XmlSerializer reader = new XmlSerializer(typeof(ResFnlttSinglAcntResult));
+                    ResFnlttSinglAcntResult result = (ResFnlttSinglAcntResult)reader.Deserialize(new MemoryStream(resData));
+                    result.displayConsole();
+                }
+                else
+                {
+                    resJson = Encoding.UTF8.GetString(resData);
+                    ResFnlttSinglAcntResult result = JsonSerializer.Deserialize<ResFnlttSinglAcntResult>(resJson);
+                    result.displayConsole();
+                }
+            }
+            catch (WebException e)
+            {
+                displayWebException(e);
+                return false;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("*******************************************************************************");
+                Console.WriteLine("!!! EXCEPTION: " + e.Message);
+                Console.WriteLine("*******************************************************************************");
+                return false;
+            }
+            finally
+            {
+                DebugEndProtocol();
+            }
+
+            return true;
+        }
     }
 }
