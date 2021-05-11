@@ -289,37 +289,97 @@ namespace OpenDart.OpenDartClient
          * Request URL: https://opendart.fss.or.kr/api/list.json
          *              https://opendart.fss.or.kr/api/list.xml
          * Request Parameter:
-         * 키	        명칭	        타입	        필수여부	    값설명
-         * crtfc_key	API 인증키	STRING(40)	Y	        발급받은 인증키(40자리)
-         * corp_code	고유번호	    STRING(8)	N	        공시대상회사의 고유번호(8자리)
-         *                                                  ※ 개발가이드 > 공시정보 > 고유번호 API조회 가능
-         * bgn_de	    시작일	    STRING(8)	N	        검색시작 접수일자(YYYYMMDD) : 없으면 종료일(end_de)
-         *                                                  고유번호(corp_code)가 없는 경우 검색기간은 3개월로 제한
-         * end_de	    종료일	    STRING(8)	N	        검색종료 접수일자(YYYYMMDD) : 없으면 당일
-         * last_reprt_at최종보고서 검색여부	STRING(1)	N	최종보고서만 검색여부(Y or N) 기본값 : N
-         *                                                  (정정이 있는 경우 최종정정만 검색)
-         * pblntf_ty	공시유형	    STRING(1)	N	        A : 정기공시
-         *                                                  B : 주요사항보고
-         *                                                  C : 발행공시
-         *                                                  D : 지분공시
-         *                                                  E : 기타공시
-         *                                                  F : 외부감사관련
-         *                                                  G : 펀드공시
-         *                                                  H : 자산유동화
-         *                                                  I : 거래소공시
-         *                                                  j : 공정위공시
-         * pblntf_detail_ty	공시상세유형	STRING(4)	N	    (※ 상세 유형 참조 : pblntf_detail_ty)
-         * corp_cls	    법인구분	    STRING(1)	N	        법인구분 : Y(유가), K(코스닥), N(코넥스), E(기타)
-         *                                                  ※ 없으면 전체조회, 복수조건 불가
-         * sort	        정렬	        STRING(4)	N	        접수일자: date
-         *                                                  회사명 : crp
-         *                                                  보고서명 : rpt
-         *                                                  기본값 : date
-         * sort_mth	    정렬방법	    STRING(4)	N	        오름차순(asc), 내림차순(desc) 기본값 : desc
-         * page_no	    페이지 번호	STRING(5)	N	        페이지 번호(1~n) 기본값 : 1
-         * page_count	페이지 별 건수	STRING(3)	N	    페이지당 건수(1~100) 기본값 : 10, 최대값 : 100
+         * 키               명칭	        타입	        필수여부	    값설명
+         * crtfc_key        API 인증키	    STRING(40)	Y	        발급받은 인증키(40자리)
+         * corp_code	    고유번호	    STRING(8)	N	        공시대상회사의 고유번호(8자리)
+         *                                                          ※ 개발가이드 > 공시정보 > 고유번호 API조회 가능
+         * bgn_de	        시작일	        STRING(8)	N	        검색시작 접수일자(YYYYMMDD) : 없으면 종료일(end_de)
+         *                                                          고유번호(corp_code)가 없는 경우 검색기간은 3개월로 제한
+         * end_de	        종료일	        STRING(8)	N	        검색종료 접수일자(YYYYMMDD) : 없으면 당일
+         * last_reprt_at    최종보고서 검색여부	STRING(1)	N	        최종보고서만 검색여부(Y or N) 기본값 : N
+         *                                                          (정정이 있는 경우 최종정정만 검색)
+         * pblntf_ty	    공시유형	    STRING(1)	N	          A : 정기공시
+         *                                                          B : 주요사항보고
+         *                                                          C : 발행공시
+         *                                                          D : 지분공시
+         *                                                          E : 기타공시
+         *                                                          F : 외부감사관련
+         *                                                          G : 펀드공시
+         *                                                          H : 자산유동화
+         *                                                          I : 거래소공시
+         *                                                          j : 공정위공시
+         * pblntf_detail_ty	공시상세유형        STRING(4)	N	    (※ 상세 유형 참조 : pblntf_detail_ty)
+         * corp_cls	    법인구분	           STRING(1)	N	      법인구분 : Y(유가), K(코스닥), N(코넥스), E(기타)
+         *                                                          ※ 없으면 전체조회, 복수조건 불가
+         * sort	        정렬	              STRING(4)	N	         접수일자: date
+         *                                                          회사명 : crp
+         *                                                          보고서명 : rpt
+         *                                                          기본값 : date
+         * sort_mth	    정렬방법	           STRING(4)	N	      오름차순(asc), 내림차순(desc) 기본값 : desc
+         * page_no	    페이지 번호	           STRING(5)	N	       페이지 번호(1~n) 기본값 : 1
+         * page_count	페이지 별 건수	        STRING(3)	N	        페이지당 건수(1~100) 기본값 : 10, 최대값 : 100
          * 
-         * Response Result:
+         * 상세유형:
+         * pblntf_ty    pblntf_detail_ty    설명
+         * A            A001                사업보고서
+         *              A002	            반기보고서
+         *              A003	            분기보고서
+         *              A004	            등록법인결산서류(자본시장법이전)
+         *              A005	            소액공모법인결산서류
+         * B	        B001	            주요사항보고서
+         *              B002	            주요경영사항신고(자본시장법 이전)
+         *              B003	            최대주주등과의거래신고(자본시장법 이전)
+         * C            C001	            증권신고(지분증권)
+         *              C002	            증권신고(채무증권)
+         *              C003	            증권신고(파생결합증권)
+         *              C004	            증권신고(합병등)
+         *              C005	            증권신고(기타)
+         *              C006	            소액공모(지분증권)
+         *              C007	            소액공모(채무증권)
+         *              C008	            소액공모(파생결합증권)
+         *              C009	            소액공모(합병등)
+         *              C010	            소액공모(기타)
+         *              C011	            호가중개시스템을통한소액매출
+         * D	        D001	            주식등의대량보유상황보고서
+         *              D002	            임원ㆍ주요주주특정증권등소유상황보고서
+         *              D003	            의결권대리행사권유
+         *              D004	            공개매수
+         * E	        E001	            자기주식취득/처분
+         *              E002	            신탁계약체결/해지
+         *              E003	            합병등종료보고서
+         *              E004	            주식매수선택권부여에관한신고
+         *              E005	            사외이사에관한신고
+         *              E006	            주주총회소집공고
+         *              E007	            시장조성/안정조작
+         *              E008	            합병등신고서(자본시장법 이전)
+         *              E009	            금융위등록/취소(자본시장법 이전)
+         * F	        F001	            감사보고서
+         *              F002	            연결감사보고서
+         *              F003	            결합감사보고서
+         *              F004	            회계법인사업보고서
+         *              F005	            감사전재무제표미제출신고서
+         * G	        G001	            증권신고(집합투자증권-신탁형)
+         *              G002	            증권신고(집합투자증권-회사형)
+         *              G003	            증권신고(집합투자증권-합병)
+         * H	        H001	            자산유동화계획/양도등록
+         *              H002	            사업/반기/분기보고서
+         *              H003	            증권신고(유동화증권등)
+         *              H004	            채권유동화계획/양도등록
+         *              H005	            수시보고
+         *              H006	            주요사항보고서
+         * I	        I001	            수시공시
+         *              I002	            공정공시
+         *              I003	            시장조치/안내
+         *              I004	            지분공시
+         *              I005	            증권투자회사
+         *              I006	            채권공시
+         * J	        J001	            대규모내부거래관련
+         *              J002	            대규모내부거래관련(구)
+         *              J004	            기업집단현황공시
+         *              J005	            비상장회사중요사항공시
+         *              J006	            기타공정위공시
+         *
+         * Response Result: ResDisclosureSearchResult
          * 
          * Response Status:
          *  - 000 :정상
@@ -462,10 +522,10 @@ namespace OpenDart.OpenDartClient
          *                https://opendart.fss.or.kr/api/company.xml
          * Request Parameter:
          * 키	        명칭	        타입	        필수여부	    값설명
-         * crtfc_key	API 인증키	STRING(40)  Y	        발급받은 인증키(40자리)
-         * corp_code	고유번호	    STRING(8)	Y	        공시대상회사의 고유번호(8자리)
-         *                                                  ※ 개발가이드 > 공시정보 > 고유번호 API조회 가능
-         * Response Result: CompanyInfo
+         * crtfc_key	API 인증키	    STRING(40)      Y	        발급받은 인증키(40자리)
+         * corp_code	고유번호	     STRING(8)	    Y	        공시대상회사의 고유번호(8자리)
+         *                                                          ※ 개발가이드 > 공시정보 > 고유번호 API조회 가능
+         * Response Result: ResCompanyInfo
          * 
          * Response Status:
          *  - 000 :정상
@@ -538,12 +598,30 @@ namespace OpenDart.OpenDartClient
                 response.Close();
 
                 /*------------------------------------------------<<Response JSON format
-                    {"status":"000","message":"정상","corp_code":"00126380","corp_name":"삼성전자(주)","corp_name_eng":"SAMSUNG ELECTRONICS CO,.LTD","stock_name":"삼성전자","stock_code":"005930","ceo_nm":"김기남, 김현석, 고동진","corp_cls":"Y","jurir_no":"1301110006246","bizr_no":"1248100998","adres":"경기도 수원시 영통구  삼성로 129 (매탄동)","hm_url":"www.sec.co.kr","ir_url":"","phn_no":"031-200-1114","fax_no":"031-200-7538","induty_code":"264","est_dt":"19690113","acc_mt":"12"}
+                    {"status":"000",
+                     "message":"정상",
+                     "corp_code":"00126380",
+                     "corp_name":"삼성전자(주)",
+                     "corp_name_eng":"SAMSUNG ELECTRONICS CO,.LTD",
+                     "stock_name":"삼성전자",
+                     "stock_code":"005930",
+                     "ceo_nm":"김기남, 김현석, 고동진",
+                     "corp_cls":"Y",
+                     "jurir_no":"1301110006246",
+                     "bizr_no":"1248100998",
+                     "adres":"경기도 수원시 영통구  삼성로 129 (매탄동)",
+                     "hm_url":"www.sec.co.kr",
+                     "ir_url":"",
+                     "phn_no":"031-200-1114",
+                     "fax_no":"031-200-7538",
+                     "induty_code":"264",
+                     "est_dt":"19690113",
+                     "acc_mt":"12"}
                  ----------------------------------------------------------------------*/
                 if (isXml)
                 {
-                    XmlSerializer reader = new XmlSerializer(typeof(CompanyInfo));
-                    CompanyInfo result = (CompanyInfo)reader.Deserialize(new MemoryStream(resData));
+                    XmlSerializer reader = new XmlSerializer(typeof(ResCompanyInfo));
+                    ResCompanyInfo result = (ResCompanyInfo)reader.Deserialize(new MemoryStream(resData));
                     result.displayConsole();
                 }
                 else
@@ -551,7 +629,7 @@ namespace OpenDart.OpenDartClient
                     resJson = Encoding.UTF8.GetString(resData);
                     // Descrialize
                     //CompanyInfo ci = new CompanyInfo();
-                    CompanyInfo result = JsonSerializer.Deserialize<CompanyInfo>(resJson);
+                    ResCompanyInfo result = JsonSerializer.Deserialize<ResCompanyInfo>(resJson);
                     result.displayConsole();
                 }
             }
@@ -579,7 +657,8 @@ namespace OpenDart.OpenDartClient
          * Api Category : 1. 공시정보
          * Api Name     : 1.3. 공시서류원본파일, https://opendart.fss.or.kr/guide/detail.do?apiGrpCd=DS001&apiId=2019003
          * Description  : 공시보고서 원본파일을 제공합니다.
-         *              20190401004781.zip -> 20190401004781.xml
+         *                download directory: dummyDirectory/document/rcept_no
+         *                ex) dummyDirectory/document/20190401004781/20190401004781.zip -> 20190401004781.xml
          *              
          * Request URL  : https://opendart.fss.or.kr/api/document.xml
          * Request Parameter:
@@ -659,7 +738,7 @@ namespace OpenDart.OpenDartClient
 
                 /*------------------------------------------------<<Response JSON format
                  ----------------------------------------------------------------------*/
-                string zipDirectory = dummyDirectory + Path.DirectorySeparatorChar + rcept_no;
+                string zipDirectory = dummyDirectory + Path.DirectorySeparatorChar + "document" + Path.DirectorySeparatorChar + rcept_no;
                 string zipFilePath = zipDirectory + Path.DirectorySeparatorChar + rcept_no + ".zip";
                 if (Directory.Exists(zipDirectory))
                 {

@@ -5,7 +5,7 @@ using System.Xml.Serialization;
 namespace OpenDart.Models
 {
     [XmlRoot("result")]
-    public class CompanyInfo
+    public class ResCompanyInfo
     {
         [XmlElement("status")]
         public string status { get; set; }          // 에러 및 정보 코드(※메시지 설명 참조)
@@ -44,7 +44,7 @@ namespace OpenDart.Models
         [XmlElement("acc_mt")]
         public string acc_mt { get; set; }          // 결산월(MM)     결산월(MM)
 
-        public CompanyInfo()
+        public ResCompanyInfo()
         {
             status        = "";
             message       = "";
@@ -69,7 +69,7 @@ namespace OpenDart.Models
         public void displayConsole()
         {
             Console.WriteLine("==================================================");
-            Console.WriteLine("CompanyInfo Information");
+            Console.WriteLine("ResCompanyInfo Information");
             Console.WriteLine("--------------------------------------------------");
             Console.WriteLine("status: {0}", status);
             Console.WriteLine("message: {0}", message);

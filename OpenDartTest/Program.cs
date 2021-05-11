@@ -28,7 +28,7 @@ namespace OpenDartTest
             // OpenDartClient.Instance.REQ1_3_GET_DOCUMENT_FILE("20190401004781");
 
             // 1.4. 고유번호(전체 기업 종목코드 파일 다운로드 및 설정)
-            // OpenDartClient.Instance.REQ1_4_GET_CORPCODE_INFO();
+            OpenDartClient.Instance.REQ1_4_GET_CORPCODE_INFO();
             //========================================================================
 
             //========================================================================
@@ -97,7 +97,7 @@ namespace OpenDartTest
             // OpenDartClient.Instance.REQ4_1_GET_MAJORSTOCK_INFO("00126380");
 
             // 4.2. 임원ㆍ주요주주 소유보고, corp_code=00126380
-            OpenDartClient.Instance.REQ4_2_GET_ELESTOCK_INFO("00126380");
+            // OpenDartClient.Instance.REQ4_2_GET_ELESTOCK_INFO("00126380");
             //========================================================================
         }
     }
