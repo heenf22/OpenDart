@@ -84,7 +84,10 @@ namespace OpenDartTest
             // OpenDartClient.Instance.REQ3_3_GET_FNLTT_XBRL_INFO("20190401004781", "11011");
 
             // 3.4. 단일회사 전체 재무제표, corp_code=00126380&bsns_year=2018&reprt_code=11011&fs_div=OFS
-            OpenDartClient.Instance.REQ3_4_GET_FNLTT_SINGL_ACNT_ALL_INFO("00126380", "2018", "11011", "OFS");
+            // OpenDartClient.Instance.REQ3_4_GET_FNLTT_SINGL_ACNT_ALL_INFO("00126380", "2018", "11011", "OFS");
+
+            // 3.5. XBRL택사노미재무제표양식, sj_div=BS1
+            OpenDartClient.Instance.REQ3_5_GET_XBRL_TAXONOMY_INFO("BS1");
             //========================================================================
         }
     }
