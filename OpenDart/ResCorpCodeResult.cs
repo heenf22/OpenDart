@@ -26,6 +26,23 @@ namespace OpenDart.Models
     public class ResCorpCodeResult
     {
         [XmlElement("list")]
-        public List<ResCorpCodeItem> Dummys { get; set; }
+        public List<ResCorpCodeItem> list { get; set; }     // 공시 코드 목록
+    
+        public ResCorpCodeResult()
+        {
+            list = new List<ResCorpCodeItem>();
+        }
+
+        public void displayConsole()
+        {
+            Console.WriteLine("==================================================");
+            Console.WriteLine("ResCorpCodeResult Information");
+            Console.WriteLine("--------------------------------------------------");
+            foreach (ResCorpCodeItem item in list)
+            {
+                item.displayConsole();
+            }
+            Console.WriteLine("==================================================");
+        }
     }
 }

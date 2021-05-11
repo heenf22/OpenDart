@@ -947,10 +947,7 @@ namespace OpenDart.OpenDartClient
                     file.Close();
                 }
 
-                //foreach (DummyCorp corp in dummyCorps.Dummys)
-                //{
-                //    corp.displayConsole();
-                //}
+                corpCodeList.displayConsole();
 
                 Console.WriteLine("---------------");
             }
