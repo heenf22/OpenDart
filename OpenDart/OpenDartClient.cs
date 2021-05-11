@@ -3528,5 +3528,141 @@ namespace OpenDart.OpenDartClient
 
             return true;
         }
+
+        /******************************************************************************************************************************************************
+         * Api Category : 4. 지분공시 종합정보
+         * Api Name     : 4.2. 임원ㆍ주요주주 소유보고, https://opendart.fss.or.kr/guide/detail.do?apiGrpCd=DS004&apiId=2019022
+         * Description  : 임원ㆍ주요주주특정증권등 소유상황보고서 내에 임원ㆍ주요주주 소유보고 정보를 제공합니다.
+         *              
+         * Request URL  : https://opendart.fss.or.kr/api/elestock.json
+         *                https://opendart.fss.or.kr/api/elestock.xml
+         * Request Parameter:
+         * 키	        명칭	        타입	        필수여부	    값설명
+         * crtfc_key	API 인증키	   STRING(40)	   Y	        발급받은 인증키(40자리)
+         * corp_code	고유번호	    STRING(8)	    Y	         공시대상회사의 고유번호(8자리)
+         *                                                         ※ 개발가이드 > 공시정보 > 고유번호 API조회 가능
+         * 
+         * Response Result: ResElestockResult
+         * 
+         * Response Status:
+         *  - 000 :정상
+         *  - 010 :등록되지 않은 키입니다.
+         *  - 011 :사용할 수 없는 키입니다. 오픈API에 등록되었으나, 일시적으로 사용 중지된 키를 통하여 검색하는 경우 발생합니다.
+         *  - 020 :요청 제한을 초과하였습니다.
+         *         일반적으로는 10,000건 이상의 요청에 대하여 이 에러 메시지가 발생되나, 요청 제한이 다르게 설정된 경우에는 이에 준하여 발생됩니다.
+         *  - 100 :필드의 부적절한 값입니다.필드 설명에 없는 값을 사용한 경우에 발생하는 메시지입니다.
+         *  - 800 :원활한 공시서비스를 위하여 오픈API 서비스가 중지 중입니다.
+         *  - 900 :정의되지 않은 오류가 발생하였습니다.
+         *  string status = response.GetResponseHeader("status");
+         *  string message = response.GetResponseHeader("message");
+         */
+        public bool REQ4_2_GET_ELESTOCK_INFO(string corp_code, bool isXml = false)
+        {
+            DebugBeginProtocol("REQ4_2_GET_ELESTOCK_INFO");
+
+            try
+            {
+                string reqJson = string.Empty;
+                string resJson = string.Empty;
+
+                /*------------------------------------------------->>Request param
+                https://opendart.fss.or.kr/api/elestock.json?crtfc_key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&corp_code=00126380
+                 ----------------------------------------------------------------------*/
+                // Serialize
+                byte[] reqData = Encoding.UTF8.GetBytes(reqJson);
+
+                // HTTP Request
+                string reqParam = string.Empty;
+                if (string.IsNullOrEmpty(apiKey))
+                {
+                    Console.WriteLine("Could not find the api key. Please set the api key.");
+                    return false;
+                }
+                reqParam += "?crtfc_key=" + apiKey;
+                if (!string.IsNullOrEmpty(corp_code)) reqParam += "&corp_code=" + corp_code;
+
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(apiUri + "/elestock." + (isXml ? "xml" : "json") + reqParam);
+                request.ProtocolVersion = HttpVersion.Version11;
+                if (useProxy)
+                {
+                    request.Proxy = new WebProxy(proxyIp, proxyPort);
+                }
+                //request.Credentials = CredentialCache.DefaultCredentials;
+                //request.CookieContainer = new CookieContainer();
+                //if (cookiecollection != null) request.CookieContainer.Add(cookiecollection);
+                request.Method = "GET";
+                request.KeepAlive = false;
+                request.AllowAutoRedirect = false;
+                request.Timeout = timeOut * 1000;
+                request.UserAgent = "Stock Valuator Client";
+                request.ContentType = "application/json; charset=utf-8";
+                request.ContentLength = reqData.Length;
+                // request.Headers["X-Result-Message"] = "OK";
+                if (reqData.Length > 0 && request.Method != "GET")
+                {
+                    Stream dataStream = request.GetRequestStream();
+                    dataStream.Write(reqData, 0, reqData.Length);
+                    dataStream.Close();
+                }
+                DebugRequest(request, reqData, true);
+
+                // HTTP Response
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                MemoryStream ms = new MemoryStream();
+                response.GetResponseStream().CopyTo(ms);
+                byte[] resData = ms.ToArray();
+                DebugResponse(response, resData, true);
+                ms.Close();
+                response.Close();
+
+                /*------------------------------------------------<<Response JSON format
+                 {"status":"000","message":"정상","list":[
+                     {"rcept_no":"20190516000064",
+                      "rcept_dt":"2019-05-16",
+                      "corp_code":"00126380",
+                      "corp_name":"삼성전자",
+                      "repror":"강봉구",
+                      "isu_exctv_rgist_at":"비등기임원",
+                      "isu_exctv_ofcps":"부사장",
+                      "isu_main_shrholdr":"-",
+                      "sp_stock_lmp_cnt":"2,000",
+                      "sp_stock_lmp_irds_cnt":"2,000",
+                      "sp_stock_lmp_rate":"0.00",
+                      "sp_stock_lmp_irds_rate":"0.00"},...
+                 ----------------------------------------------------------------------*/
+
+                //// Descrialize
+                if (isXml)
+                {
+                    XmlSerializer reader = new XmlSerializer(typeof(ResElestockResult));
+                    ResElestockResult result = (ResElestockResult)reader.Deserialize(new MemoryStream(resData));
+                    result.displayConsole();
+                }
+                else
+                {
+                    resJson = Encoding.UTF8.GetString(resData);
+                    ResElestockResult result = JsonSerializer.Deserialize<ResElestockResult>(resJson);
+                    result.displayConsole();
+                }
+            }
+            catch (WebException e)
+            {
+                displayWebException(e);
+                return false;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("*******************************************************************************");
+                Console.WriteLine("!!! EXCEPTION: " + e.Message);
+                Console.WriteLine("*******************************************************************************");
+                return false;
+            }
+            finally
+            {
+                DebugEndProtocol();
+            }
+
+            return true;
+        }
     }
 }

@@ -94,7 +94,10 @@ namespace OpenDartTest
             // 4. 지분공시 종합정보 테스트 (REQ4_XXX)
             //========================================================================
             // 4.1. 대량보유 상황보고, corp_code=00126380
-            OpenDartClient.Instance.REQ4_1_GET_MAJORSTOCK_INFO("00126380");
+            // OpenDartClient.Instance.REQ4_1_GET_MAJORSTOCK_INFO("00126380");
+
+            // 4.2. 임원ㆍ주요주주 소유보고, corp_code=00126380
+            OpenDartClient.Instance.REQ4_2_GET_ELESTOCK_INFO("00126380");
             //========================================================================
         }
     }
