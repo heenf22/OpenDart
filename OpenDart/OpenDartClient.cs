@@ -38,7 +38,7 @@ namespace OpenDart.OpenDartClient
         private OpenDartClient()
         {
             dummyDirectory = @"C:\Users\heenf\Desktop\Project\dummy";
-            dummyCorps = new DummyCorps();
+            corpCodeList = new ResCorpCodeResult();
             requestApiKeyCount = 0;
 
             // X.509 SSL Define (private OCP) SSL 통신을 위해 CertificatePolicy property 등록
@@ -91,10 +91,7 @@ namespace OpenDart.OpenDartClient
 
         private CookieCollection cookiecollection;
 
-        public DummyCorps dummyCorps
-        {
-            get; set;
-        }
+        public ResCorpCodeResult corpCodeList { get; set; }
 
         public CookieCollection getCooki()
         {
@@ -350,7 +347,7 @@ namespace OpenDart.OpenDartClient
                 // Serialize
                 byte[] reqData = Encoding.UTF8.GetBytes(reqJson);
 
-                // HTTP Request(ex: https://opendart.fss.or.kr/api/list.json?crtfc_key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&bgn_de=20200117&end_de=20200117&corp_cls=Y&page_no=1&page_count=10)
+                // https://opendart.fss.or.kr/api/list.json?crtfc_key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&bgn_de=20200117&end_de=20200117&corp_cls=Y&page_no=1&page_count=10
                 string reqParam = string.Empty;
                 if (string.IsNullOrEmpty(apiKey))
                 {
@@ -761,10 +758,7 @@ namespace OpenDart.OpenDartClient
                 string reqJson = string.Empty;
                 string resJson = string.Empty;
 
-                /*------------------------------------------------->>Request JSON format
-                    {
-                        "In"{"LOGIN_INFO":{"ID":"lgh","Password":"eai"}}
-                    }
+                /*------------------------------------------------->>Request param
                  ----------------------------------------------------------------------*/
                 // Serialize
                 //Hero hero = new Hero();
@@ -868,9 +862,9 @@ namespace OpenDart.OpenDartClient
 
                 using (StreamReader file = new StreamReader(dummyDirectory + Path.DirectorySeparatorChar + "CORPCODE.xml"))
                 {
-                    XmlSerializer reader = new XmlSerializer(typeof(DummyCorps));
-                    //DummyCorps corps = (DummyCorps)reader.Deserialize(file);
-                    dummyCorps = (DummyCorps)reader.Deserialize(file);
+                    XmlSerializer reader = new XmlSerializer(typeof(ResCorpCodeResult));
+                    //ResCorpCodeResult corpCodeList = (ResCorpCodeResult)reader.Deserialize(file);
+                    corpCodeList = (ResCorpCodeResult)reader.Deserialize(file);
                     file.Close();
                 }
 

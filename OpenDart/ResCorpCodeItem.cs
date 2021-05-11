@@ -22,7 +22,7 @@ namespace OpenDart.Models
     //    </list>
     //</result>
 
-    public class DummyCorp
+    public class ResCorpCodeItem
     {
         [XmlElement("corp_code")]
         public string corp_code { get; set; }
@@ -33,7 +33,7 @@ namespace OpenDart.Models
         [XmlElement("modify_date")]
         public string modify_date { get; set; }
 
-        public DummyCorp()
+        public ResCorpCodeItem()
         {
             corp_code = "";
             corp_name = "";
@@ -44,7 +44,7 @@ namespace OpenDart.Models
         public void displayConsole()
         {
             Console.WriteLine("==================================================");
-            Console.WriteLine("Corp Information");
+            Console.WriteLine("ResCorpCodeItem Information");
             Console.WriteLine("--------------------------------------------------");
             Console.WriteLine("corp_code: {0}", corp_code);
             Console.WriteLine("corp_name: {0}", corp_name);

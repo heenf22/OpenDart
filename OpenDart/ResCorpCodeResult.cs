@@ -23,9 +23,9 @@ namespace OpenDart.Models
     //</result>
 
     [XmlRoot("result")]
-    public class DummyCorps
+    public class ResCorpCodeResult
     {
         [XmlElement("list")]
-        public List<DummyCorp> Dummys { get; set; }
+        public List<ResCorpCodeItem> Dummys { get; set; }
     }
 }
