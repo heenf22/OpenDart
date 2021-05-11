@@ -502,6 +502,7 @@ namespace OpenDart.OpenDartClient
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
+                reqResultStatus.EXCEPTION = e.Message;
                 return false;
             }
             finally
@@ -643,6 +644,7 @@ namespace OpenDart.OpenDartClient
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
+                reqResultStatus.EXCEPTION = e.Message;
                 return false;
             }
             finally
@@ -778,6 +780,7 @@ namespace OpenDart.OpenDartClient
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
+                reqResultStatus.EXCEPTION = e.Message;
                 return false;
             }
             finally
@@ -961,6 +964,7 @@ namespace OpenDart.OpenDartClient
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
+                reqResultStatus.EXCEPTION = e.Message;
                 return false;
             }
             finally
@@ -1103,6 +1107,7 @@ namespace OpenDart.OpenDartClient
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
+                reqResultStatus.EXCEPTION = e.Message;
                 return false;
             }
             finally
@@ -1243,6 +1248,7 @@ namespace OpenDart.OpenDartClient
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
+                reqResultStatus.EXCEPTION = e.Message;
                 return false;
             }
             finally
@@ -1388,6 +1394,7 @@ namespace OpenDart.OpenDartClient
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
+                reqResultStatus.EXCEPTION = e.Message;
                 return false;
             }
             finally
@@ -1532,6 +1539,7 @@ namespace OpenDart.OpenDartClient
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
+                reqResultStatus.EXCEPTION = e.Message;
                 return false;
             }
             finally
@@ -1673,6 +1681,7 @@ namespace OpenDart.OpenDartClient
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
+                reqResultStatus.EXCEPTION = e.Message;
                 return false;
             }
             finally
@@ -1815,6 +1824,7 @@ namespace OpenDart.OpenDartClient
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
+                reqResultStatus.EXCEPTION = e.Message;
                 return false;
             }
             finally
@@ -1961,6 +1971,7 @@ namespace OpenDart.OpenDartClient
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
+                reqResultStatus.EXCEPTION = e.Message;
                 return false;
             }
             finally
@@ -2110,6 +2121,7 @@ namespace OpenDart.OpenDartClient
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
+                reqResultStatus.EXCEPTION = e.Message;
                 return false;
             }
             finally
@@ -2249,6 +2261,7 @@ namespace OpenDart.OpenDartClient
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
+                reqResultStatus.EXCEPTION = e.Message;
                 return false;
             }
             finally
@@ -2388,6 +2401,7 @@ namespace OpenDart.OpenDartClient
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
+                reqResultStatus.EXCEPTION = e.Message;
                 return false;
             }
             finally
@@ -2527,6 +2541,7 @@ namespace OpenDart.OpenDartClient
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
+                reqResultStatus.EXCEPTION = e.Message;
                 return false;
             }
             finally
@@ -2677,6 +2692,7 @@ namespace OpenDart.OpenDartClient
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
+                reqResultStatus.EXCEPTION = e.Message;
                 return false;
             }
             finally
@@ -2828,6 +2844,7 @@ namespace OpenDart.OpenDartClient
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
+                reqResultStatus.EXCEPTION = e.Message;
                 return false;
             }
             finally
@@ -2979,6 +2996,7 @@ namespace OpenDart.OpenDartClient
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
+                reqResultStatus.EXCEPTION = e.Message;
                 return false;
             }
             finally
@@ -3120,6 +3138,7 @@ namespace OpenDart.OpenDartClient
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
+                reqResultStatus.EXCEPTION = e.Message;
                 return false;
             }
             finally
@@ -3270,6 +3289,7 @@ namespace OpenDart.OpenDartClient
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
+                reqResultStatus.EXCEPTION = e.Message;
                 return false;
             }
             finally
@@ -3428,6 +3448,7 @@ namespace OpenDart.OpenDartClient
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
+                reqResultStatus.EXCEPTION = e.Message;
                 return false;
             }
             finally
@@ -3565,6 +3586,7 @@ namespace OpenDart.OpenDartClient
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
+                reqResultStatus.EXCEPTION = e.Message;
                 return false;
             }
             finally
@@ -3701,6 +3723,7 @@ namespace OpenDart.OpenDartClient
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
+                reqResultStatus.EXCEPTION = e.Message;
                 return false;
             }
             finally
