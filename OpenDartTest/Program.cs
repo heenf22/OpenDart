@@ -87,7 +87,14 @@ namespace OpenDartTest
             // OpenDartClient.Instance.REQ3_4_GET_FNLTT_SINGL_ACNT_ALL_INFO("00126380", "2018", "11011", "OFS");
 
             // 3.5. XBRL택사노미재무제표양식, sj_div=BS1
-            OpenDartClient.Instance.REQ3_5_GET_XBRL_TAXONOMY_INFO("BS1");
+            // OpenDartClient.Instance.REQ3_5_GET_XBRL_TAXONOMY_INFO("BS1");
+            //========================================================================
+
+            //========================================================================
+            // 4. 지분공시 종합정보 테스트 (REQ4_XXX)
+            //========================================================================
+            // 4.1. 대량보유 상황보고, corp_code=00126380
+            OpenDartClient.Instance.REQ4_1_GET_MAJORSTOCK_INFO("00126380");
             //========================================================================
         }
     }

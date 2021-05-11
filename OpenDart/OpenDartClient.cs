@@ -3391,5 +3391,170 @@ namespace OpenDart.OpenDartClient
 
             return true;
         }
+
+        /******************************************************************************************************************************************************
+         * Api Category : 4. 지분공시 종합정보
+         * Api Name     : 4.1. 대량보유 상황보고, https://opendart.fss.or.kr/guide/detail.do?apiGrpCd=DS004&apiId=2019021
+         * Description  : 주식등의 대량보유상황보고서 내에 대량보유 상황보고 정보를 제공합니다.
+         *              
+         * Request URL  : https://opendart.fss.or.kr/api/majorstock.json
+         *                https://opendart.fss.or.kr/api/majorstock.xml
+         * Request Parameter:
+         * 키	        명칭	        타입	        필수여부	    값설명
+         * crtfc_key	API 인증키	   STRING(40)	   Y	        발급받은 인증키(40자리)
+         * corp_code	고유번호	    STRING(8)	    Y	         공시대상회사의 고유번호(8자리)
+         *                                                         ※ 개발가이드 > 공시정보 > 고유번호 API조회 가능
+         * 
+         * 재무제표구분     재무제표명칭        개별/연결       표시방법        세전세후
+         *   BS1	    재무상태표	           연결	       유동/비유동법	
+         *   BS2	    재무상태표	           개별	       유동/비유동법	
+         *   BS3	    재무상태표	           연결	       유동성배열법	
+         *   BS4	    재무상태표	           개별	       유동성배열법	
+         *   IS1	    별개의 손익계산서	   연결	        기능별분류	
+         *   IS2	    별개의 손익계산서	   개별	        기능별분류	
+         *   IS3	    별개의 손익계산서	   연결	        성격별분류	
+         *   IS4	    별개의 손익계산서	   개별	        성격별분류	
+         *   CIS1	    포괄손익계산서	       연결	        세후	
+         *   CIS2	    포괄손익계산서	       개별	        세후	
+         *   CIS3	    포괄손익계산서	       연결	        세전	
+         *   CIS4	    포괄손익계산서	       개별	        세전	
+         *   DCIS1	    단일 포괄손익계산서	    연결	    기능별분류	        세후포괄손익
+         *   DCIS2	    단일 포괄손익계산서	    개별	    기능별분류	        세후포괄손익
+         *   DCIS3	    단일 포괄손익계산서	    연결	    기능별분류	        세전
+         *   DCIS4	    단일 포괄손익계산서	    개별	    기능별분류	        세전
+         *   DCIS5	    단일 포괄손익계산서	    연결	    성격별분류	        세후포괄손익
+         *   DCIS6	    단일 포괄손익계산서	    개별	    성격별분류	        세후포괄손익
+         *   DCIS7	    단일 포괄손익계산서	    연결	    성격별분류	        세전
+         *   DCIS8	    단일 포괄손익계산서	    개별	    성격별분류	        세전
+         *   CF1	    현금흐름표	          연결	        직접법	
+         *   CF2	    현금흐름표	          개별	        직접법	
+         *   CF3	    현금흐름표	          연결	        간접법	
+         *   CF4	    현금흐름표	          개별	        간접법	
+         *   SCE1	    자본변동표	          연결		
+         *   SCE2	    자본변동표	          개별	
+         *
+         * Response Result: ResFnlttMultiAcntResult
+         * 
+         * Response Status:
+         *  - 000 :정상
+         *  - 010 :등록되지 않은 키입니다.
+         *  - 011 :사용할 수 없는 키입니다. 오픈API에 등록되었으나, 일시적으로 사용 중지된 키를 통하여 검색하는 경우 발생합니다.
+         *  - 020 :요청 제한을 초과하였습니다.
+         *         일반적으로는 10,000건 이상의 요청에 대하여 이 에러 메시지가 발생되나, 요청 제한이 다르게 설정된 경우에는 이에 준하여 발생됩니다.
+         *  - 100 :필드의 부적절한 값입니다.필드 설명에 없는 값을 사용한 경우에 발생하는 메시지입니다.
+         *  - 800 :원활한 공시서비스를 위하여 오픈API 서비스가 중지 중입니다.
+         *  - 900 :정의되지 않은 오류가 발생하였습니다.
+         *  string status = response.GetResponseHeader("status");
+         *  string message = response.GetResponseHeader("message");
+         */
+        public bool REQ4_1_GET_MAJORSTOCK_INFO(string corp_code, bool isXml = false)
+        {
+            DebugBeginProtocol("REQ4_1_GET_MAJORSTOCK_INFO");
+
+            try
+            {
+                string reqJson = string.Empty;
+                string resJson = string.Empty;
+
+                /*------------------------------------------------->>Request param
+                https://opendart.fss.or.kr/api/majorstock.json?crtfc_key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&corp_code=00126380
+                 ----------------------------------------------------------------------*/
+                // Serialize
+                byte[] reqData = Encoding.UTF8.GetBytes(reqJson);
+
+                // HTTP Request
+                string reqParam = string.Empty;
+                if (string.IsNullOrEmpty(apiKey))
+                {
+                    Console.WriteLine("Could not find the api key. Please set the api key.");
+                    return false;
+                }
+                reqParam += "?crtfc_key=" + apiKey;
+                if (!string.IsNullOrEmpty(corp_code)) reqParam += "&corp_code=" + corp_code;
+
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(apiUri + "/majorstock." + (isXml ? "xml" : "json") + reqParam);
+                request.ProtocolVersion = HttpVersion.Version11;
+                if (useProxy)
+                {
+                    request.Proxy = new WebProxy(proxyIp, proxyPort);
+                }
+                //request.Credentials = CredentialCache.DefaultCredentials;
+                //request.CookieContainer = new CookieContainer();
+                //if (cookiecollection != null) request.CookieContainer.Add(cookiecollection);
+                request.Method = "GET";
+                request.KeepAlive = false;
+                request.AllowAutoRedirect = false;
+                request.Timeout = timeOut * 1000;
+                request.UserAgent = "Stock Valuator Client";
+                request.ContentType = "application/json; charset=utf-8";
+                request.ContentLength = reqData.Length;
+                // request.Headers["X-Result-Message"] = "OK";
+                if (reqData.Length > 0 && request.Method != "GET")
+                {
+                    Stream dataStream = request.GetRequestStream();
+                    dataStream.Write(reqData, 0, reqData.Length);
+                    dataStream.Close();
+                }
+                DebugRequest(request, reqData, true);
+
+                // HTTP Response
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                MemoryStream ms = new MemoryStream();
+                response.GetResponseStream().CopyTo(ms);
+                byte[] resData = ms.ToArray();
+                DebugResponse(response, resData, true);
+                ms.Close();
+                response.Close();
+
+                /*------------------------------------------------<<Response JSON format
+                 {"status":"000","message":"정상","list":[
+                     {"rcept_no":"20200207000636",
+                      "rcept_dt":"2020-02-07",
+                      "corp_code":"00126380",
+                      "corp_name":"삼성전자",
+                      "report_tp":"약식",
+                      "repror":"국민연금공단",
+                      "stkqy":"638,070,003",
+                      "stkqy_irds":"37,907,275",
+                      "stkrt":"10.69",
+                      "stkrt_irds":"0.64",
+                      "ctr_stkqy":"-",
+                      "ctr_stkrt":"-",
+                      "report_resn":"단순투자목적에서 일반투자목적으로 보유목적 변경"},...
+                 ----------------------------------------------------------------------*/
+
+                //// Descrialize
+                if (isXml)
+                {
+                    XmlSerializer reader = new XmlSerializer(typeof(ResMajorstockResult));
+                    ResMajorstockResult result = (ResMajorstockResult)reader.Deserialize(new MemoryStream(resData));
+                    result.displayConsole();
+                }
+                else
+                {
+                    resJson = Encoding.UTF8.GetString(resData);
+                    ResMajorstockResult result = JsonSerializer.Deserialize<ResMajorstockResult>(resJson);
+                    result.displayConsole();
+                }
+            }
+            catch (WebException e)
+            {
+                displayWebException(e);
+                return false;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("*******************************************************************************");
+                Console.WriteLine("!!! EXCEPTION: " + e.Message);
+                Console.WriteLine("*******************************************************************************");
+                return false;
+            }
+            finally
+            {
+                DebugEndProtocol();
+            }
+
+            return true;
+        }
     }
 }
