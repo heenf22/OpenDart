@@ -25,10 +25,10 @@ namespace OpenDartTest
             // OpenDartClient.Instance.REQ1_2_GET_COMPANY_INFO("00159616", true);
 
             // 1.3. 공시서류원본파일: 20190401004781
-            // OpenDartClient.Instance.REQ1_3_GET_DOCUMENT("20190401004781");
+            // OpenDartClient.Instance.REQ1_3_GET_DOCUMENT_FILE("20190401004781");
 
             // 1.4. 고유번호(전체 기업 종목코드 파일 다운로드 및 설정)
-            // OpenDartClient.Instance.REQ1_4_GET_CORPCODE();
+            // OpenDartClient.Instance.REQ1_4_GET_CORPCODE_INFO();
             //========================================================================
 
             //========================================================================
@@ -78,7 +78,13 @@ namespace OpenDartTest
             // OpenDartClient.Instance.REQ3_1_GET_FNLTT_SINGL_ACNT_INFO("00126380", "2018", "11011");
 
             // 3.2. 다중회사 주요계정, corp_code=00356370,00334624&bsns_year=2018&reprt_code=11011
-            OpenDartClient.Instance.REQ3_2_GET_FNLTT_MULTI_ACNT_INFO("00356370,00334624", "2018", "11011");
+            // OpenDartClient.Instance.REQ3_2_GET_FNLTT_MULTI_ACNT_INFO("00356370,00334624", "2018", "11011");
+
+            // 3.3. 재무제표 원본파일(XBRL), corp_code=00356370,00334624&bsns_year=2018&reprt_code=11011
+            // OpenDartClient.Instance.REQ3_3_GET_FNLTT_XBRL_INFO("20190401004781", "11011");
+
+            // 3.4. 단일회사 전체 재무제표, corp_code=00126380&bsns_year=2018&reprt_code=11011&fs_div=OFS
+            OpenDartClient.Instance.REQ3_4_GET_FNLTT_SINGL_ACNT_ALL_INFO("00126380", "2018", "11011", "OFS");
             //========================================================================
         }
     }
