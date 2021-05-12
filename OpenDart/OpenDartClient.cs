@@ -249,6 +249,16 @@ namespace OpenDart.OpenDartClient
         //=====================================================================================================================================================
         //-----------------------------------------------------------------------------------------------------------------------------------------------------
         // PROTOCOL - START
+        // [공통 사항]
+        // Response Status:
+        //   - 000 :정상
+        //   - 010 :등록되지 않은 키입니다.
+        //   - 011 :사용할 수 없는 키입니다. 오픈API에 등록되었으나, 일시적으로 사용 중지된 키를 통하여 검색하는 경우 발생합니다.
+        //   - 020 :요청 제한을 초과하였습니다.
+        //          일반적으로는 10,000건 이상의 요청에 대하여 이 에러 메시지가 발생되나, 요청 제한이 다르게 설정된 경우에는 이에 준하여 발생됩니다.
+        //   - 100 :필드의 부적절한 값입니다.필드 설명에 없는 값을 사용한 경우에 발생하는 메시지입니다.
+        //   - 800 :원활한 공시서비스를 위하여 오픈API 서비스가 중지 중입니다.
+        //   - 900 :정의되지 않은 오류가 발생하였습니다.
         //-----------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -351,18 +361,6 @@ namespace OpenDart.OpenDartClient
          *              J006	            기타공정위공시
          *
          * Response Result: ResDisclosureSearchResult
-         * 
-         * Response Status:
-         *  - 000 :정상
-         *  - 010 :등록되지 않은 키입니다.
-         *  - 011 :사용할 수 없는 키입니다. 오픈API에 등록되었으나, 일시적으로 사용 중지된 키를 통하여 검색하는 경우 발생합니다.
-         *  - 020 :요청 제한을 초과하였습니다.
-         *         일반적으로는 10,000건 이상의 요청에 대하여 이 에러 메시지가 발생되나, 요청 제한이 다르게 설정된 경우에는 이에 준하여 발생됩니다.
-         *  - 100 :필드의 부적절한 값입니다.필드 설명에 없는 값을 사용한 경우에 발생하는 메시지입니다.
-         *  - 800 :원활한 공시서비스를 위하여 오픈API 서비스가 중지 중입니다.
-         *  - 900 :정의되지 않은 오류가 발생하였습니다.
-         *  string status = response.GetResponseHeader("status");
-         *  string message = response.GetResponseHeader("message");
          */
         public ResDisclosureSearchResult REQ1_1_GET_DISCLOSURE_SEARCH(ReqDisclosureSearch rds, bool isXml = false)
         {
@@ -373,8 +371,6 @@ namespace OpenDart.OpenDartClient
 
             try
             {
-                checkApiKey();
-
                 string reqJson = string.Empty;
                 string resJson = string.Empty;
 
@@ -495,18 +491,6 @@ namespace OpenDart.OpenDartClient
          * corp_code	고유번호	     STRING(8)	    Y	        공시대상회사의 고유번호(8자리)
          *                                                          ※ 개발가이드 > 공시정보 > 고유번호 API조회 가능
          * Response Result: ResCompanyInfo
-         * 
-         * Response Status:
-         *  - 000 :정상
-         *  - 010 :등록되지 않은 키입니다.
-         *  - 011 :사용할 수 없는 키입니다. 오픈API에 등록되었으나, 일시적으로 사용 중지된 키를 통하여 검색하는 경우 발생합니다.
-         *  - 020 :요청 제한을 초과하였습니다.
-         *         일반적으로는 10,000건 이상의 요청에 대하여 이 에러 메시지가 발생되나, 요청 제한이 다르게 설정된 경우에는 이에 준하여 발생됩니다.
-         *  - 100 :필드의 부적절한 값입니다.필드 설명에 없는 값을 사용한 경우에 발생하는 메시지입니다.
-         *  - 800 :원활한 공시서비스를 위하여 오픈API 서비스가 중지 중입니다.
-         *  - 900 :정의되지 않은 오류가 발생하였습니다.
-         *  string status = response.GetResponseHeader("status");
-         *  string message = response.GetResponseHeader("message");
          */
         public ResCompanyInfo REQ1_2_GET_COMPANY_INFO(string corp_code, bool isXml = false)
         {
@@ -631,17 +615,6 @@ namespace OpenDart.OpenDartClient
          * rcept_no	    접수번호	     STRING(14)	     Y	        접수번호
          * 
          * Response Result: Zip FILE (binary)
-         * Response Status:
-         *  - 000 :정상
-         *  - 010 :등록되지 않은 키입니다.
-         *  - 011 :사용할 수 없는 키입니다. 오픈API에 등록되었으나, 일시적으로 사용 중지된 키를 통하여 검색하는 경우 발생합니다.
-         *  - 020 :요청 제한을 초과하였습니다.
-         *         일반적으로는 10,000건 이상의 요청에 대하여 이 에러 메시지가 발생되나, 요청 제한이 다르게 설정된 경우에는 이에 준하여 발생됩니다.
-         *  - 100 :필드의 부적절한 값입니다.필드 설명에 없는 값을 사용한 경우에 발생하는 메시지입니다.
-         *  - 800 :원활한 공시서비스를 위하여 오픈API 서비스가 중지 중입니다.
-         *  - 900 :정의되지 않은 오류가 발생하였습니다.
-         *  string status = response.GetResponseHeader("status");
-         *  string message = response.GetResponseHeader("message");
          */
         public string REQ1_3_GET_DOCUMENT_FILE(string rcept_no)
         {
@@ -774,17 +747,6 @@ namespace OpenDart.OpenDartClient
          *   ※ ZIP File 안에 있는 XML파일 정보
          *   modify_date	최종변경일자	Y	기업개황정보 최종변경일자(YYYYMMDD)
          *   ※ ZIP File 안에 있는 XML파일 정보
-         * Response Status:
-         *  - 000 :정상
-         *  - 010 :등록되지 않은 키입니다.
-         *  - 011 :사용할 수 없는 키입니다. 오픈API에 등록되었으나, 일시적으로 사용 중지된 키를 통하여 검색하는 경우 발생합니다.
-         *  - 020 :요청 제한을 초과하였습니다.
-         *         일반적으로는 10,000건 이상의 요청에 대하여 이 에러 메시지가 발생되나, 요청 제한이 다르게 설정된 경우에는 이에 준하여 발생됩니다.
-         *  - 100 :필드의 부적절한 값입니다.필드 설명에 없는 값을 사용한 경우에 발생하는 메시지입니다.
-         *  - 800 :원활한 공시서비스를 위하여 오픈API 서비스가 중지 중입니다.
-         *  - 900 :정의되지 않은 오류가 발생하였습니다.
-         *  string status = response.GetResponseHeader("status");
-         *  string message = response.GetResponseHeader("message");
          */
         public ResCorpCodeResult REQ1_4_GET_CORPCODE_INFO()
         {
@@ -925,18 +887,6 @@ namespace OpenDart.OpenDartClient
          *                                                      3분기보고서 : 11014
          *                                                      사업보고서 : 11011
          * Response Result: ResIrdsSttusResult
-         * 
-         * Response Status:
-         *  - 000 :정상
-         *  - 010 :등록되지 않은 키입니다.
-         *  - 011 :사용할 수 없는 키입니다. 오픈API에 등록되었으나, 일시적으로 사용 중지된 키를 통하여 검색하는 경우 발생합니다.
-         *  - 020 :요청 제한을 초과하였습니다.
-         *         일반적으로는 10,000건 이상의 요청에 대하여 이 에러 메시지가 발생되나, 요청 제한이 다르게 설정된 경우에는 이에 준하여 발생됩니다.
-         *  - 100 :필드의 부적절한 값입니다.필드 설명에 없는 값을 사용한 경우에 발생하는 메시지입니다.
-         *  - 800 :원활한 공시서비스를 위하여 오픈API 서비스가 중지 중입니다.
-         *  - 900 :정의되지 않은 오류가 발생하였습니다.
-         *  string status = response.GetResponseHeader("status");
-         *  string message = response.GetResponseHeader("message");
          */
         public ResIrdsSttusResult REQ2_1_GET_IRDS_STTUS_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
         {
@@ -1063,18 +1013,6 @@ namespace OpenDart.OpenDartClient
          *                                                      3분기보고서 : 11014
          *                                                      사업보고서 : 11011
          * Response Result: ResIrdsSttusResult
-         * 
-         * Response Status:
-         *  - 000 :정상
-         *  - 010 :등록되지 않은 키입니다.
-         *  - 011 :사용할 수 없는 키입니다. 오픈API에 등록되었으나, 일시적으로 사용 중지된 키를 통하여 검색하는 경우 발생합니다.
-         *  - 020 :요청 제한을 초과하였습니다.
-         *         일반적으로는 10,000건 이상의 요청에 대하여 이 에러 메시지가 발생되나, 요청 제한이 다르게 설정된 경우에는 이에 준하여 발생됩니다.
-         *  - 100 :필드의 부적절한 값입니다.필드 설명에 없는 값을 사용한 경우에 발생하는 메시지입니다.
-         *  - 800 :원활한 공시서비스를 위하여 오픈API 서비스가 중지 중입니다.
-         *  - 900 :정의되지 않은 오류가 발생하였습니다.
-         *  string status = response.GetResponseHeader("status");
-         *  string message = response.GetResponseHeader("message");
          */
         public ResAlotMatterResult REQ2_2_GET_ALOT_MATTER_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
         {
@@ -1199,18 +1137,6 @@ namespace OpenDart.OpenDartClient
          *                                                      3분기보고서 : 11014
          *                                                      사업보고서 : 11011
          * Response Result: ResTesstkAcqsDspsSttusResult
-         * 
-         * Response Status:
-         *  - 000 :정상
-         *  - 010 :등록되지 않은 키입니다.
-         *  - 011 :사용할 수 없는 키입니다. 오픈API에 등록되었으나, 일시적으로 사용 중지된 키를 통하여 검색하는 경우 발생합니다.
-         *  - 020 :요청 제한을 초과하였습니다.
-         *         일반적으로는 10,000건 이상의 요청에 대하여 이 에러 메시지가 발생되나, 요청 제한이 다르게 설정된 경우에는 이에 준하여 발생됩니다.
-         *  - 100 :필드의 부적절한 값입니다.필드 설명에 없는 값을 사용한 경우에 발생하는 메시지입니다.
-         *  - 800 :원활한 공시서비스를 위하여 오픈API 서비스가 중지 중입니다.
-         *  - 900 :정의되지 않은 오류가 발생하였습니다.
-         *  string status = response.GetResponseHeader("status");
-         *  string message = response.GetResponseHeader("message");
          */
         public ResTesstkAcqsDspsSttusResult REQ2_3_GET_TESSTK_ACQS_DSPS_STTUS_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
         {
@@ -1341,18 +1267,6 @@ namespace OpenDart.OpenDartClient
          *                                                      3분기보고서 : 11014
          *                                                      사업보고서 : 11011
          * Response Result: ResTesstkAcqsDspsSttusResult
-         * 
-         * Response Status:
-         *  - 000 :정상
-         *  - 010 :등록되지 않은 키입니다.
-         *  - 011 :사용할 수 없는 키입니다. 오픈API에 등록되었으나, 일시적으로 사용 중지된 키를 통하여 검색하는 경우 발생합니다.
-         *  - 020 :요청 제한을 초과하였습니다.
-         *         일반적으로는 10,000건 이상의 요청에 대하여 이 에러 메시지가 발생되나, 요청 제한이 다르게 설정된 경우에는 이에 준하여 발생됩니다.
-         *  - 100 :필드의 부적절한 값입니다.필드 설명에 없는 값을 사용한 경우에 발생하는 메시지입니다.
-         *  - 800 :원활한 공시서비스를 위하여 오픈API 서비스가 중지 중입니다.
-         *  - 900 :정의되지 않은 오류가 발생하였습니다.
-         *  string status = response.GetResponseHeader("status");
-         *  string message = response.GetResponseHeader("message");
          */
         public ResHyslrSttusResult REQ2_4_GET_HYSLR_STTUS_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
         {
@@ -1482,18 +1396,6 @@ namespace OpenDart.OpenDartClient
          *                                                      3분기보고서 : 11014
          *                                                      사업보고서 : 11011
          * Response Result: ResTesstkAcqsDspsSttusResult
-         * 
-         * Response Status:
-         *  - 000 :정상
-         *  - 010 :등록되지 않은 키입니다.
-         *  - 011 :사용할 수 없는 키입니다. 오픈API에 등록되었으나, 일시적으로 사용 중지된 키를 통하여 검색하는 경우 발생합니다.
-         *  - 020 :요청 제한을 초과하였습니다.
-         *         일반적으로는 10,000건 이상의 요청에 대하여 이 에러 메시지가 발생되나, 요청 제한이 다르게 설정된 경우에는 이에 준하여 발생됩니다.
-         *  - 100 :필드의 부적절한 값입니다.필드 설명에 없는 값을 사용한 경우에 발생하는 메시지입니다.
-         *  - 800 :원활한 공시서비스를 위하여 오픈API 서비스가 중지 중입니다.
-         *  - 900 :정의되지 않은 오류가 발생하였습니다.
-         *  string status = response.GetResponseHeader("status");
-         *  string message = response.GetResponseHeader("message");
          */
         public ResHyslrChgSttusResult REQ2_5_GET_HYSLR_CHG_STTUS_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
         {
@@ -1620,18 +1522,6 @@ namespace OpenDart.OpenDartClient
          *                                                      3분기보고서 : 11014
          *                                                      사업보고서 : 11011
          * Response Result: ResTesstkAcqsDspsSttusResult
-         * 
-         * Response Status:
-         *  - 000 :정상
-         *  - 010 :등록되지 않은 키입니다.
-         *  - 011 :사용할 수 없는 키입니다. 오픈API에 등록되었으나, 일시적으로 사용 중지된 키를 통하여 검색하는 경우 발생합니다.
-         *  - 020 :요청 제한을 초과하였습니다.
-         *         일반적으로는 10,000건 이상의 요청에 대하여 이 에러 메시지가 발생되나, 요청 제한이 다르게 설정된 경우에는 이에 준하여 발생됩니다.
-         *  - 100 :필드의 부적절한 값입니다.필드 설명에 없는 값을 사용한 경우에 발생하는 메시지입니다.
-         *  - 800 :원활한 공시서비스를 위하여 오픈API 서비스가 중지 중입니다.
-         *  - 900 :정의되지 않은 오류가 발생하였습니다.
-         *  string status = response.GetResponseHeader("status");
-         *  string message = response.GetResponseHeader("message");
          */
         public ResMrhlSttusResult REQ2_6_GET_MRHL_STTUS_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
         {
@@ -1759,18 +1649,6 @@ namespace OpenDart.OpenDartClient
          *                                                      3분기보고서 : 11014
          *                                                      사업보고서 : 11011
          * Response Result: ResExctvSttusResult
-         * 
-         * Response Status:
-         *  - 000 :정상
-         *  - 010 :등록되지 않은 키입니다.
-         *  - 011 :사용할 수 없는 키입니다. 오픈API에 등록되었으나, 일시적으로 사용 중지된 키를 통하여 검색하는 경우 발생합니다.
-         *  - 020 :요청 제한을 초과하였습니다.
-         *         일반적으로는 10,000건 이상의 요청에 대하여 이 에러 메시지가 발생되나, 요청 제한이 다르게 설정된 경우에는 이에 준하여 발생됩니다.
-         *  - 100 :필드의 부적절한 값입니다.필드 설명에 없는 값을 사용한 경우에 발생하는 메시지입니다.
-         *  - 800 :원활한 공시서비스를 위하여 오픈API 서비스가 중지 중입니다.
-         *  - 900 :정의되지 않은 오류가 발생하였습니다.
-         *  string status = response.GetResponseHeader("status");
-         *  string message = response.GetResponseHeader("message");
          */
         public ResExctvSttusResult REQ2_7_GET_EXCTV_STTUS_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
         {
@@ -1902,18 +1780,6 @@ namespace OpenDart.OpenDartClient
          *                                                      3분기보고서 : 11014
          *                                                      사업보고서 : 11011
          * Response Result: ResEmpSttusResult
-         * 
-         * Response Status:
-         *  - 000 :정상
-         *  - 010 :등록되지 않은 키입니다.
-         *  - 011 :사용할 수 없는 키입니다. 오픈API에 등록되었으나, 일시적으로 사용 중지된 키를 통하여 검색하는 경우 발생합니다.
-         *  - 020 :요청 제한을 초과하였습니다.
-         *         일반적으로는 10,000건 이상의 요청에 대하여 이 에러 메시지가 발생되나, 요청 제한이 다르게 설정된 경우에는 이에 준하여 발생됩니다.
-         *  - 100 :필드의 부적절한 값입니다.필드 설명에 없는 값을 사용한 경우에 발생하는 메시지입니다.
-         *  - 800 :원활한 공시서비스를 위하여 오픈API 서비스가 중지 중입니다.
-         *  - 900 :정의되지 않은 오류가 발생하였습니다.
-         *  string status = response.GetResponseHeader("status");
-         *  string message = response.GetResponseHeader("message");
          */
         public ResEmpSttusResult REQ2_8_GET_EMP_STTUS_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
         {
@@ -2048,18 +1914,6 @@ namespace OpenDart.OpenDartClient
          *                                                      3분기보고서 : 11014
          *                                                      사업보고서 : 11011
          * Response Result: ResHmvAuditIndvdlBySttusResult
-         * 
-         * Response Status:
-         *  - 000 :정상
-         *  - 010 :등록되지 않은 키입니다.
-         *  - 011 :사용할 수 없는 키입니다. 오픈API에 등록되었으나, 일시적으로 사용 중지된 키를 통하여 검색하는 경우 발생합니다.
-         *  - 020 :요청 제한을 초과하였습니다.
-         *         일반적으로는 10,000건 이상의 요청에 대하여 이 에러 메시지가 발생되나, 요청 제한이 다르게 설정된 경우에는 이에 준하여 발생됩니다.
-         *  - 100 :필드의 부적절한 값입니다.필드 설명에 없는 값을 사용한 경우에 발생하는 메시지입니다.
-         *  - 800 :원활한 공시서비스를 위하여 오픈API 서비스가 중지 중입니다.
-         *  - 900 :정의되지 않은 오류가 발생하였습니다.
-         *  string status = response.GetResponseHeader("status");
-         *  string message = response.GetResponseHeader("message");
          */
         public ResHmvAuditIndvdlBySttusResult REQ2_9_GET_HMV_AUDIT_INDVDL_BY_STTUS_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
         {
@@ -2184,18 +2038,6 @@ namespace OpenDart.OpenDartClient
          *                                                      3분기보고서 : 11014
          *                                                      사업보고서 : 11011
          * Response Result: ResHmvAuditAllSttusResult
-         * 
-         * Response Status:
-         *  - 000 :정상
-         *  - 010 :등록되지 않은 키입니다.
-         *  - 011 :사용할 수 없는 키입니다. 오픈API에 등록되었으나, 일시적으로 사용 중지된 키를 통하여 검색하는 경우 발생합니다.
-         *  - 020 :요청 제한을 초과하였습니다.
-         *         일반적으로는 10,000건 이상의 요청에 대하여 이 에러 메시지가 발생되나, 요청 제한이 다르게 설정된 경우에는 이에 준하여 발생됩니다.
-         *  - 100 :필드의 부적절한 값입니다.필드 설명에 없는 값을 사용한 경우에 발생하는 메시지입니다.
-         *  - 800 :원활한 공시서비스를 위하여 오픈API 서비스가 중지 중입니다.
-         *  - 900 :정의되지 않은 오류가 발생하였습니다.
-         *  string status = response.GetResponseHeader("status");
-         *  string message = response.GetResponseHeader("message");
          */
         public ResHmvAuditAllSttusResult REQ2_10_GET_HMV_AUDIT_ALL_STTUS_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
         {
@@ -2320,18 +2162,6 @@ namespace OpenDart.OpenDartClient
          *                                                      3분기보고서 : 11014
          *                                                      사업보고서 : 11011
          * Response Result: ResIndvdlByPayResult
-         * 
-         * Response Status:
-         *  - 000 :정상
-         *  - 010 :등록되지 않은 키입니다.
-         *  - 011 :사용할 수 없는 키입니다. 오픈API에 등록되었으나, 일시적으로 사용 중지된 키를 통하여 검색하는 경우 발생합니다.
-         *  - 020 :요청 제한을 초과하였습니다.
-         *         일반적으로는 10,000건 이상의 요청에 대하여 이 에러 메시지가 발생되나, 요청 제한이 다르게 설정된 경우에는 이에 준하여 발생됩니다.
-         *  - 100 :필드의 부적절한 값입니다.필드 설명에 없는 값을 사용한 경우에 발생하는 메시지입니다.
-         *  - 800 :원활한 공시서비스를 위하여 오픈API 서비스가 중지 중입니다.
-         *  - 900 :정의되지 않은 오류가 발생하였습니다.
-         *  string status = response.GetResponseHeader("status");
-         *  string message = response.GetResponseHeader("message");
          */
         public ResIndvdlByPayResult REQ2_11_GET_INDVDL_BY_PAY_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
         {
@@ -2456,18 +2286,6 @@ namespace OpenDart.OpenDartClient
          *                                                      3분기보고서 : 11014
          *                                                      사업보고서 : 11011
          * Response Result: ResIndvdlByPayResult
-         * 
-         * Response Status:
-         *  - 000 :정상
-         *  - 010 :등록되지 않은 키입니다.
-         *  - 011 :사용할 수 없는 키입니다. 오픈API에 등록되었으나, 일시적으로 사용 중지된 키를 통하여 검색하는 경우 발생합니다.
-         *  - 020 :요청 제한을 초과하였습니다.
-         *         일반적으로는 10,000건 이상의 요청에 대하여 이 에러 메시지가 발생되나, 요청 제한이 다르게 설정된 경우에는 이에 준하여 발생됩니다.
-         *  - 100 :필드의 부적절한 값입니다.필드 설명에 없는 값을 사용한 경우에 발생하는 메시지입니다.
-         *  - 800 :원활한 공시서비스를 위하여 오픈API 서비스가 중지 중입니다.
-         *  - 900 :정의되지 않은 오류가 발생하였습니다.
-         *  string status = response.GetResponseHeader("status");
-         *  string message = response.GetResponseHeader("message");
          */
         public ResOtrCprInvstmntSttusResult REQ2_12_GET_OTR_CPR_INVSTMNT_STTUS_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
         {
@@ -2603,18 +2421,6 @@ namespace OpenDart.OpenDartClient
          *                                                      3분기보고서 : 11014
          *                                                      사업보고서 : 11011
          * Response Result: ResFnlttSinglAcntResult
-         * 
-         * Response Status:
-         *  - 000 :정상
-         *  - 010 :등록되지 않은 키입니다.
-         *  - 011 :사용할 수 없는 키입니다. 오픈API에 등록되었으나, 일시적으로 사용 중지된 키를 통하여 검색하는 경우 발생합니다.
-         *  - 020 :요청 제한을 초과하였습니다.
-         *         일반적으로는 10,000건 이상의 요청에 대하여 이 에러 메시지가 발생되나, 요청 제한이 다르게 설정된 경우에는 이에 준하여 발생됩니다.
-         *  - 100 :필드의 부적절한 값입니다.필드 설명에 없는 값을 사용한 경우에 발생하는 메시지입니다.
-         *  - 800 :원활한 공시서비스를 위하여 오픈API 서비스가 중지 중입니다.
-         *  - 900 :정의되지 않은 오류가 발생하였습니다.
-         *  string status = response.GetResponseHeader("status");
-         *  string message = response.GetResponseHeader("message");
          */
         public ResFnlttSinglAcntResult REQ3_1_GET_FNLTT_SINGL_ACNT_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
         {
@@ -2751,18 +2557,6 @@ namespace OpenDart.OpenDartClient
          *                                                      3분기보고서 : 11014
          *                                                      사업보고서 : 11011
          * Response Result: ResFnlttMultiAcntResult
-         * 
-         * Response Status:
-         *  - 000 :정상
-         *  - 010 :등록되지 않은 키입니다.
-         *  - 011 :사용할 수 없는 키입니다. 오픈API에 등록되었으나, 일시적으로 사용 중지된 키를 통하여 검색하는 경우 발생합니다.
-         *  - 020 :요청 제한을 초과하였습니다.
-         *         일반적으로는 10,000건 이상의 요청에 대하여 이 에러 메시지가 발생되나, 요청 제한이 다르게 설정된 경우에는 이에 준하여 발생됩니다.
-         *  - 100 :필드의 부적절한 값입니다.필드 설명에 없는 값을 사용한 경우에 발생하는 메시지입니다.
-         *  - 800 :원활한 공시서비스를 위하여 오픈API 서비스가 중지 중입니다.
-         *  - 900 :정의되지 않은 오류가 발생하였습니다.
-         *  string status = response.GetResponseHeader("status");
-         *  string message = response.GetResponseHeader("message");
          */
         public ResFnlttMultiAcntResult REQ3_2_GET_FNLTT_MULTI_ACNT_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
         {
@@ -2896,18 +2690,6 @@ namespace OpenDart.OpenDartClient
          *                                                         3분기보고서 : 11014
          *                                                         사업보고서 : 11011
          * Response Result: ResFnlttMultiAcntResult
-         * 
-         * Response Status:
-         *  - 000 :정상
-         *  - 010 :등록되지 않은 키입니다.
-         *  - 011 :사용할 수 없는 키입니다. 오픈API에 등록되었으나, 일시적으로 사용 중지된 키를 통하여 검색하는 경우 발생합니다.
-         *  - 020 :요청 제한을 초과하였습니다.
-         *         일반적으로는 10,000건 이상의 요청에 대하여 이 에러 메시지가 발생되나, 요청 제한이 다르게 설정된 경우에는 이에 준하여 발생됩니다.
-         *  - 100 :필드의 부적절한 값입니다.필드 설명에 없는 값을 사용한 경우에 발생하는 메시지입니다.
-         *  - 800 :원활한 공시서비스를 위하여 오픈API 서비스가 중지 중입니다.
-         *  - 900 :정의되지 않은 오류가 발생하였습니다.
-         *  string status = response.GetResponseHeader("status");
-         *  string message = response.GetResponseHeader("message");
          */
         public string REQ3_3_GET_FNLTT_XBRL_INFO(string rcept_no, string reprt_code)
         {
@@ -3041,18 +2823,6 @@ namespace OpenDart.OpenDartClient
          * fs_div	    개별/연결구분	STRING(3)	    Y	        CFS:연결재무제표, OFS:재무제표
          *
          * Response Result: ResFnlttMultiAcntResult
-         * 
-         * Response Status:
-         *  - 000 :정상
-         *  - 010 :등록되지 않은 키입니다.
-         *  - 011 :사용할 수 없는 키입니다. 오픈API에 등록되었으나, 일시적으로 사용 중지된 키를 통하여 검색하는 경우 발생합니다.
-         *  - 020 :요청 제한을 초과하였습니다.
-         *         일반적으로는 10,000건 이상의 요청에 대하여 이 에러 메시지가 발생되나, 요청 제한이 다르게 설정된 경우에는 이에 준하여 발생됩니다.
-         *  - 100 :필드의 부적절한 값입니다.필드 설명에 없는 값을 사용한 경우에 발생하는 메시지입니다.
-         *  - 800 :원활한 공시서비스를 위하여 오픈API 서비스가 중지 중입니다.
-         *  - 900 :정의되지 않은 오류가 발생하였습니다.
-         *  string status = response.GetResponseHeader("status");
-         *  string message = response.GetResponseHeader("message");
          */
         public ResFnlttSinglAcntAllResult REQ3_4_GET_FNLTT_SINGL_ACNT_ALL_INFO(string corp_code, string bsns_year, string reprt_code, string fs_div, bool isXml = false)
         {
@@ -3218,18 +2988,6 @@ namespace OpenDart.OpenDartClient
          *   SCE2	    자본변동표	          개별	
          *
          * Response Result: ResFnlttMultiAcntResult
-         * 
-         * Response Status:
-         *  - 000 :정상
-         *  - 010 :등록되지 않은 키입니다.
-         *  - 011 :사용할 수 없는 키입니다. 오픈API에 등록되었으나, 일시적으로 사용 중지된 키를 통하여 검색하는 경우 발생합니다.
-         *  - 020 :요청 제한을 초과하였습니다.
-         *         일반적으로는 10,000건 이상의 요청에 대하여 이 에러 메시지가 발생되나, 요청 제한이 다르게 설정된 경우에는 이에 준하여 발생됩니다.
-         *  - 100 :필드의 부적절한 값입니다.필드 설명에 없는 값을 사용한 경우에 발생하는 메시지입니다.
-         *  - 800 :원활한 공시서비스를 위하여 오픈API 서비스가 중지 중입니다.
-         *  - 900 :정의되지 않은 오류가 발생하였습니다.
-         *  string status = response.GetResponseHeader("status");
-         *  string message = response.GetResponseHeader("message");
          */
         public ResXbrlTaxonomyResult REQ3_5_GET_XBRL_TAXONOMY_INFO(SJ_DIV sj_div, bool isXml = false)
         {
@@ -3347,18 +3105,6 @@ namespace OpenDart.OpenDartClient
          *                                                         ※ 개발가이드 > 공시정보 > 고유번호 API조회 가능
          * 
          * Response Result: ResMajorstockResult
-         * 
-         * Response Status:
-         *  - 000 :정상
-         *  - 010 :등록되지 않은 키입니다.
-         *  - 011 :사용할 수 없는 키입니다. 오픈API에 등록되었으나, 일시적으로 사용 중지된 키를 통하여 검색하는 경우 발생합니다.
-         *  - 020 :요청 제한을 초과하였습니다.
-         *         일반적으로는 10,000건 이상의 요청에 대하여 이 에러 메시지가 발생되나, 요청 제한이 다르게 설정된 경우에는 이에 준하여 발생됩니다.
-         *  - 100 :필드의 부적절한 값입니다.필드 설명에 없는 값을 사용한 경우에 발생하는 메시지입니다.
-         *  - 800 :원활한 공시서비스를 위하여 오픈API 서비스가 중지 중입니다.
-         *  - 900 :정의되지 않은 오류가 발생하였습니다.
-         *  string status = response.GetResponseHeader("status");
-         *  string message = response.GetResponseHeader("message");
          */
         public ResMajorstockResult REQ4_1_GET_MAJORSTOCK_INFO(string corp_code, bool isXml = false)
         {
@@ -3481,18 +3227,6 @@ namespace OpenDart.OpenDartClient
          *                                                         ※ 개발가이드 > 공시정보 > 고유번호 API조회 가능
          * 
          * Response Result: ResElestockResult
-         * 
-         * Response Status:
-         *  - 000 :정상
-         *  - 010 :등록되지 않은 키입니다.
-         *  - 011 :사용할 수 없는 키입니다. 오픈API에 등록되었으나, 일시적으로 사용 중지된 키를 통하여 검색하는 경우 발생합니다.
-         *  - 020 :요청 제한을 초과하였습니다.
-         *         일반적으로는 10,000건 이상의 요청에 대하여 이 에러 메시지가 발생되나, 요청 제한이 다르게 설정된 경우에는 이에 준하여 발생됩니다.
-         *  - 100 :필드의 부적절한 값입니다.필드 설명에 없는 값을 사용한 경우에 발생하는 메시지입니다.
-         *  - 800 :원활한 공시서비스를 위하여 오픈API 서비스가 중지 중입니다.
-         *  - 900 :정의되지 않은 오류가 발생하였습니다.
-         *  string status = response.GetResponseHeader("status");
-         *  string message = response.GetResponseHeader("message");
          */
         public ResElestockResult REQ4_2_GET_ELESTOCK_INFO(string corp_code, bool isXml = false)
         {
