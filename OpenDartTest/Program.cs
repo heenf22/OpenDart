@@ -8,8 +8,8 @@ namespace OpenDartTest
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello TestOpenDart!");
 
+            Console.WriteLine("Hello TestOpenDart!");
             try
             {
                 OpenDartClient client = new OpenDartClient();
