@@ -1,8 +1,8 @@
-# OpenDart (ing...)
-Open DART API C# library (참고 사이트: https://opendart.fss.or.kr/)
+# OpenDart
+Open DART API C# library
 
 ## 소개
-DART 사이트에서 제공하는 API를 C#에서 사용하기 쉽도록 라이브러리 형태로 만들었다.
+DART 사이트에서 제공하는 API를 C#에서 사용하기 쉽도록 라이브러리로 구성하였다. (참고 사이트: https://opendart.fss.or.kr/)
 
 ## 프로젝트 구성 및 테스트 콘솔 닷넷 명령어
 - dotnet new classlib -o OpenDart
