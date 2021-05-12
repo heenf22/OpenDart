@@ -30,15 +30,37 @@ namespace OpenDart.OpenDartClient
         public string EXCEPTION;            // Exception Message
     }
 
-    public sealed class OpenDartClient
+    public class OpenDartClient
     {
-        private static volatile OpenDartClient instance;
-        private static object syncRoot = new Object();
+        public string dummyDirectory { get; set; }
+        public int timeOut { get; set; } = 300;     // sec
+        public bool useProxy { get; set; } = false;
+        public string proxyIp { get; set; } = "127.0.0.1";
+        public int proxyPort { get; set; } = 8080;
+        public bool isLogin { get; set; } = false;
+        public REQ_RESULT_STATUS reqResultStatus;
 
-        private OpenDartClient()
+        // Open DART 쿼리용 키로 회원가입 후 발급받아 사용, 하루 이용횟수에 제한이 있음
+        public string apiKey { get; set; }
+        public string apiUri { get; set; } = "https://opendart.fss.or.kr/api";
+        public int requestApiKeyCount { get; set; }
+
+        public OpenDartClient()
         {
+            apiKey = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
             dummyDirectory = @"C:\Users\heenf\Desktop\Project\dummy";
-            corpCodeList = new ResCorpCodeResult();
+            initialize();
+        }
+
+        public OpenDartClient(string apiKey)
+        {
+            this.apiKey = apiKey;
+            dummyDirectory = @"C:\Users\heenf\Desktop\Project\dummy";
+            initialize();
+        }
+
+        private void initialize()
+        {
             requestApiKeyCount = 0;
 
             // X.509 SSL Define (private OCP) SSL 통신을 위해 CertificatePolicy property 등록
@@ -54,44 +76,10 @@ namespace OpenDart.OpenDartClient
         // X.509 SSL Define (private OCP)
         //public static bool ValidateServerCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         //{
-        //    return true;
+        //    return result;
         //}
 
-        public static OpenDartClient Instance
-        {
-            get
-            {
-                if (instance == null)
-                {
-                    lock (syncRoot)
-                    {
-                        if (instance == null)
-                        {
-                            instance = new OpenDartClient();
-                        }
-                    }
-                }
-
-                return instance;
-            }
-        }
-
-        public string dummyDirectory { get; set; }
-        public int timeOut { get; set; } = 300;
-        public bool useProxy { get; set; } = false;
-        public string proxyIp { get; set; } = "127.0.0.1";
-        public int proxyPort { get; set; } = 8080;
-        public bool isLogin { get; set; } = false;
-        public REQ_RESULT_STATUS reqResultStatus;
-
-        // Open DART 쿼리용 키로 회원가입 후 발급받아 사용, 하루 이용횟수에 제한이 있음
-        public string apiKey { get; set; }
-        public string apiUri { get; set; } = "https://opendart.fss.or.kr/api";
-        public int requestApiKeyCount { get; }
-
         private CookieCollection cookiecollection;
-
-        public ResCorpCodeResult corpCodeList { get; set; }
 
         public CookieCollection getCooki()
         {
@@ -174,7 +162,7 @@ namespace OpenDart.OpenDartClient
             return result.ToString();
         }
 
-        private void DebugBeginProtocol(string protocolName)
+        private void debugBeginProtocol(string protocolName)
         {
             reqResultStatus.EXCEPTION = "";
             reqResultStatus.BEGIN_TICKCOUNT = Environment.TickCount;
@@ -183,7 +171,7 @@ namespace OpenDart.OpenDartClient
             Console.WriteLine("---- Begin {0}: {1}", reqResultStatus.PROTOCOL_NAME, DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"));
         }
 
-        private void DebugEndProtocol()
+        private void debugEndProtocol()
         {
             reqResultStatus.END_TICKCOUNT = Environment.TickCount;
             Console.WriteLine("---- End {0}: {1} <-- {2} [ms]", reqResultStatus.PROTOCOL_NAME, DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"), (reqResultStatus.END_TICKCOUNT - reqResultStatus.BEGIN_TICKCOUNT).ToString("#,##0"));
@@ -230,38 +218,12 @@ namespace OpenDart.OpenDartClient
             {
                 Console.WriteLine(HexDump(resData));
             }
-
-            parseResult(response);
-        }
-
-        private bool parseResult(HttpWebResponse response)
-        {
-            try
-            {
-                reqResultStatus.CODE = response.GetResponseHeader("X-Result-Code");
-                reqResultStatus.MESSAGE = response.GetResponseHeader("X-Result-Message");
-            }
-            catch (NullReferenceException e)
-            {
-                Console.WriteLine("!! NullReferenceException:StackTrace : " + e.StackTrace);
-                Console.WriteLine("!! NullReferenceException:Message : " + e.Message);
-                return false;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("!! Exception:StackTrace : " + e.StackTrace);
-                Console.WriteLine("!! Exception:Message : " + e.Message);
-                return false;
-            }
-
-            return true;
         }
 
         private void displayWebException(WebException e)
         {
             Console.WriteLine("*******************************************************************************");
             Console.WriteLine("!!! Web EXCEPTION: " + e.Message);
-            reqResultStatus.EXCEPTION = e.Message;
             HttpWebResponse response = (HttpWebResponse)e.Response;
             MemoryStream ms = new MemoryStream();
             response.GetResponseStream().CopyTo(ms);
@@ -272,6 +234,15 @@ namespace OpenDart.OpenDartClient
             ms.Close();
             response.Close();
             Console.WriteLine("*******************************************************************************");
+        }
+
+        private void checkApiKey()
+        {
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                Console.WriteLine("Could not find the api key. Please set the api key.");
+                throw new Exception("Could not find the api key. Please set the api key.");
+            }
         }
 
         //=====================================================================================================================================================
@@ -393,12 +364,17 @@ namespace OpenDart.OpenDartClient
          *  string status = response.GetResponseHeader("status");
          *  string message = response.GetResponseHeader("message");
          */
-        public bool REQ1_1_GET_DISCLOSURE_SEARCH(ReqDisclosureSearch rds, bool isXml = false)
+        public ResDisclosureSearchResult REQ1_1_GET_DISCLOSURE_SEARCH(ReqDisclosureSearch rds, bool isXml = false)
         {
-            DebugBeginProtocol("REQ1_1_GET_DISCLOSURE_SEARCH");
+            debugBeginProtocol("REQ1_1_GET_DISCLOSURE_SEARCH");
+            checkApiKey();
+
+            ResDisclosureSearchResult result = null;
 
             try
             {
+                checkApiKey();
+
                 string reqJson = string.Empty;
                 string resJson = string.Empty;
 
@@ -408,13 +384,7 @@ namespace OpenDart.OpenDartClient
                 byte[] reqData = Encoding.UTF8.GetBytes(reqJson);
 
                 // https://opendart.fss.or.kr/api/list.json?crtfc_key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&bgn_de=20200117&end_de=20200117&corp_cls=Y&page_no=1&page_count=10
-                string reqParam = string.Empty;
-                if (string.IsNullOrEmpty(apiKey))
-                {
-                    Console.WriteLine("Could not find the api key. Please set the api key.");
-                    return false;
-                }
-                reqParam += "?crtfc_key=" + apiKey;
+                string reqParam = "?crtfc_key=" + apiKey;
                 if (!string.IsNullOrEmpty(rds.corp_code)) reqParam += "&corp_code=" + rds.corp_code;
                 if (!string.IsNullOrEmpty(rds.bgn_de)) reqParam += "&bgn_de=" + rds.bgn_de;
                 if (!string.IsNullOrEmpty(rds.end_de)) reqParam += "&end_de=" + rds.end_de;
@@ -481,36 +451,34 @@ namespace OpenDart.OpenDartClient
                 if (isXml)
                 {
                     XmlSerializer reader = new XmlSerializer(typeof(ResDisclosureSearchResult));
-                    ResDisclosureSearchResult result = (ResDisclosureSearchResult)reader.Deserialize(new MemoryStream(resData));
-                    result.displayConsole();
+                    result = (ResDisclosureSearchResult)reader.Deserialize(new MemoryStream(resData));
+                    // result.displayConsole();
                 }
                 else
                 {
                     resJson = Encoding.UTF8.GetString(resData);
-                    //ResDisclosureSearchResult result = new ResDisclosureSearchResult();
-                    ResDisclosureSearchResult result = JsonSerializer.Deserialize<ResDisclosureSearchResult>(resJson);
-                    result.displayConsole();
+                    result = JsonSerializer.Deserialize<ResDisclosureSearchResult>(resJson);
+                    // result.displayConsole();
                 }
             }
             catch (WebException e)
             {
                 displayWebException(e);
-                return false;
+                throw;
             }
             catch (Exception e)
             {
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
-                reqResultStatus.EXCEPTION = e.Message;
-                return false;
+                throw;
             }
             finally
             {
-                DebugEndProtocol();
+                debugEndProtocol();
             }
 
-            return true;
+            return result;
         }
 
         /******************************************************************************************************************************************************
@@ -540,9 +508,12 @@ namespace OpenDart.OpenDartClient
          *  string status = response.GetResponseHeader("status");
          *  string message = response.GetResponseHeader("message");
          */
-        public bool REQ1_2_GET_COMPANY_INFO(string corp_code, bool isXml = false)
+        public ResCompanyInfo REQ1_2_GET_COMPANY_INFO(string corp_code, bool isXml = false)
         {
-            DebugBeginProtocol("REQ1_2_GET_COMPANY_INFO");
+            debugBeginProtocol("REQ1_2_GET_COMPANY_INFO");
+            checkApiKey();
+
+            ResCompanyInfo result = null;
 
             try
             {
@@ -555,13 +526,7 @@ namespace OpenDart.OpenDartClient
                 byte[] reqData = Encoding.UTF8.GetBytes(reqJson);
 
                 // HTTP Request
-                string reqParam = string.Empty;
-                if (string.IsNullOrEmpty(apiKey))
-                {
-                    Console.WriteLine("Could not find the api key. Please set the api key.");
-                    return false;
-                }
-                reqParam += "?crtfc_key=" + apiKey;
+                string reqParam = "?crtfc_key=" + apiKey;
                 if (!string.IsNullOrEmpty(corp_code)) reqParam += "&corp_code=" + corp_code;
 
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(apiUri + "/company." + (isXml ? "xml" : "json") + reqParam);
@@ -622,37 +587,34 @@ namespace OpenDart.OpenDartClient
                 if (isXml)
                 {
                     XmlSerializer reader = new XmlSerializer(typeof(ResCompanyInfo));
-                    ResCompanyInfo result = (ResCompanyInfo)reader.Deserialize(new MemoryStream(resData));
-                    result.displayConsole();
+                    result = (ResCompanyInfo)reader.Deserialize(new MemoryStream(resData));
+                    // result.displayConsole();
                 }
                 else
                 {
                     resJson = Encoding.UTF8.GetString(resData);
-                    // Descrialize
-                    //CompanyInfo ci = new CompanyInfo();
-                    ResCompanyInfo result = JsonSerializer.Deserialize<ResCompanyInfo>(resJson);
-                    result.displayConsole();
+                    result = JsonSerializer.Deserialize<ResCompanyInfo>(resJson);
+                    // result.displayConsole();
                 }
             }
             catch (WebException e)
             {
                 displayWebException(e);
-                return false;
+                throw;
             }
             catch (Exception e)
             {
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
-                reqResultStatus.EXCEPTION = e.Message;
-                return false;
+                throw;
             }
             finally
             {
-                DebugEndProtocol();
+                debugEndProtocol();
             }
 
-            return true;
+            return result;
         }
 
         /******************************************************************************************************************************************************
@@ -681,9 +643,12 @@ namespace OpenDart.OpenDartClient
          *  string status = response.GetResponseHeader("status");
          *  string message = response.GetResponseHeader("message");
          */
-        public bool REQ1_3_GET_DOCUMENT_FILE(string rcept_no)
+        public string REQ1_3_GET_DOCUMENT_FILE(string rcept_no)
         {
-            DebugBeginProtocol("REQ1_3_GET_DOCUMENT_FILE");
+            debugBeginProtocol("REQ1_3_GET_DOCUMENT_FILE");
+            checkApiKey();
+
+            string result = null;
 
             try
             {
@@ -696,13 +661,7 @@ namespace OpenDart.OpenDartClient
                 byte[] reqData = Encoding.UTF8.GetBytes(reqJson);
 
                 // HTTP Request
-                string reqParam = string.Empty;
-                if (string.IsNullOrEmpty(apiKey))
-                {
-                    Console.WriteLine("Could not find the api key. Please set the api key.");
-                    return false;
-                }
-                reqParam += "?crtfc_key=" + apiKey;
+                string reqParam = "?crtfc_key=" + apiKey;
                 if (!string.IsNullOrEmpty(rcept_no)) reqParam += "&rcept_no=" + rcept_no;
 
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(apiUri + "/document.xml" + reqParam);
@@ -769,26 +728,27 @@ namespace OpenDart.OpenDartClient
                 //    dummyCorps = (DummyCorps)reader.Deserialize(file);
                 //    file.Close();
                 //}
+
+                result = zipDirectory;
             }
             catch (WebException e)
             {
                 displayWebException(e);
-                return false;
+                throw;
             }
             catch (Exception e)
             {
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
-                reqResultStatus.EXCEPTION = e.Message;
-                return false;
+                throw;
             }
             finally
             {
-                DebugEndProtocol();
+                debugEndProtocol();
             }
 
-            return true;
+            return result;
         }
 
         /******************************************************************************************************************************************************
@@ -826,9 +786,12 @@ namespace OpenDart.OpenDartClient
          *  string status = response.GetResponseHeader("status");
          *  string message = response.GetResponseHeader("message");
          */
-        public bool REQ1_4_GET_CORPCODE_INFO()
+        public ResCorpCodeResult REQ1_4_GET_CORPCODE_INFO()
         {
-            DebugBeginProtocol("REQ1_4_GET_CORPCODE_INFO");
+            debugBeginProtocol("REQ1_4_GET_CORPCODE_INFO");
+            checkApiKey();
+
+            ResCorpCodeResult result = null;
 
             try
             {
@@ -848,13 +811,7 @@ namespace OpenDart.OpenDartClient
                 byte[] reqData = Encoding.UTF8.GetBytes(reqJson);
 
                 // HTTP Request
-                string reqParam = string.Empty;
-                if (string.IsNullOrEmpty(apiKey))
-                {
-                    Console.WriteLine("Could not find the api key. Please set the api key.");
-                    return false;
-                }
-                reqParam += "?crtfc_key=" + apiKey;
+                string reqParam = "?crtfc_key=" + apiKey;
                 // if (!string.IsNullOrEmpty(rcept_no)) reqParam += "&rcept_no=" + rcept_no;
 
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(apiUri + "/corpCode.xml" + reqParam);
@@ -909,30 +866,7 @@ namespace OpenDart.OpenDartClient
                 response.Close();
 
                 /*------------------------------------------------<<Response JSON format
-                    {"id":"test1","employeeId":"20210209-114403679","groupIds":[],"names":["test1"],"phoneNumbers":[],"emails":[],"passwordHashType":3,"password":"c3c7026420480e268ea803ec0c298122948dee6639283641d4d7677b59c3b4f35c0103257ab65bbc6d0d44859ef958cb423a6371b7ec553de5e2bb63cecae81e","nick":"","level":0,"isLogined":false,"chatStatus":0,"face":"","informations":[],"attribute":{"key":"bcf82789-f5fc-4117-a8d9-a4142846d292","enabled":true,"locked":false,"modifiers":2,"expireDateTime":"20210509114403679","comments":null,"regHeroId":"phantom","regDateTime":"20210209114403679","regTimeZoneId":"Korea Standard Time","modHeroId":"phantom","modDateTime":"20210209114403679","modTimeZoneId":"Korea Standard Time","testDt":"2021-02-09T11:44:03.6798662Z"}},{"id":"test2","employeeId":"20210209-114435078","groupIds":[],"names":["test2"],"phoneNumbers":[],"emails":[],"passwordHashType":3,"password":"c3c7026420480e268ea803ec0c298122948dee6639283641d4d7677b59c3b4f35c0103257ab65bbc6d0d44859ef958cb423a6371b7ec553de5e2bb63cecae81e","nick":"","level":0,"isLogined":false,"chatStatus":0,"face":"","informations":[],"attribute":{"key":"85d8db9b-686a-437b-a50d-ae53caa6e217","enabled":true,"locked":false,"modifiers":2,"expireDateTime":"20210509114435079","comments":null,"regHeroId":"phantom","regDateTime":"20210209114435079","regTimeZoneId":"Korea Standard Time","modHeroId":"phantom","modDateTime":"20210209114435079","modTimeZoneId":"Korea Standard Time","testDt":"2021-02-09T11:44:35.0790087Z"}}
                  ----------------------------------------------------------------------*/
-                //resJson = Encoding.UTF8.GetString(resData);
-                // #if DEBUG
-                // #else
-                // Console.WriteLine("{0}", resJson);
-                // #endif
-                // Descrialize
-                //Hero[] heroes = JsonSerializer.Deserialize<Hero[]>(resJson);
-                //Console.WriteLine("---------------");
-                //foreach (Hero e in heroes)
-                //{
-                //    Console.WriteLine("Hero ID: {0}", e.id);
-                //}
-                //using (XmlTextReader xtr = new XmlTextReader("CORPCODE.xml"))
-                //{
-                //    while (xtr.Read())
-                //    {
-
-                //    }
-
-                //    xtr.Close();
-                //}
-
                 File.Delete(dummyDirectory + Path.DirectorySeparatorChar + "CORPCODE.zip");
                 File.Delete(dummyDirectory + Path.DirectorySeparatorChar + "CORPCODE.xml");
                 using (FileStream fs = new FileStream(dummyDirectory + Path.DirectorySeparatorChar + "CORPCODE.zip", FileMode.Create, System.IO.FileAccess.Write))
@@ -945,34 +879,31 @@ namespace OpenDart.OpenDartClient
                 using (StreamReader file = new StreamReader(dummyDirectory + Path.DirectorySeparatorChar + "CORPCODE.xml"))
                 {
                     XmlSerializer reader = new XmlSerializer(typeof(ResCorpCodeResult));
-                    //ResCorpCodeResult corpCodeList = (ResCorpCodeResult)reader.Deserialize(file);
-                    corpCodeList = (ResCorpCodeResult)reader.Deserialize(file);
+                    //ResCorpCodeResult result = (ResCorpCodeResult)reader.Deserialize(file);
+                    result = (ResCorpCodeResult)reader.Deserialize(file);
                     file.Close();
                 }
 
-                corpCodeList.displayConsole();
-
-                Console.WriteLine("---------------");
+                // corpCodeList.displayConsole();
             }
             catch (WebException e)
             {
                 displayWebException(e);
-                return false;
+                throw;
             }
             catch (Exception e)
             {
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
-                reqResultStatus.EXCEPTION = e.Message;
-                return false;
+                throw;
             }
             finally
             {
-                DebugEndProtocol();
+                debugEndProtocol();
             }
 
-            return true;
+            return result;
         }
 
         /******************************************************************************************************************************************************
@@ -1007,9 +938,12 @@ namespace OpenDart.OpenDartClient
          *  string status = response.GetResponseHeader("status");
          *  string message = response.GetResponseHeader("message");
          */
-        public bool REQ2_1_GET_IRDS_STTUS_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
+        public ResIrdsSttusResult REQ2_1_GET_IRDS_STTUS_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
         {
-            DebugBeginProtocol("REQ2_1_GET_IRDS_STTUS_INFO");
+            debugBeginProtocol("REQ2_1_GET_IRDS_STTUS_INFO");
+            checkApiKey();
+
+            ResIrdsSttusResult result = null;
 
             try
             {
@@ -1023,13 +957,7 @@ namespace OpenDart.OpenDartClient
                 byte[] reqData = Encoding.UTF8.GetBytes(reqJson);
 
                 // HTTP Request
-                string reqParam = string.Empty;
-                if (string.IsNullOrEmpty(apiKey))
-                {
-                    Console.WriteLine("Could not find the api key. Please set the api key.");
-                    return false;
-                }
-                reqParam += "?crtfc_key=" + apiKey;
+                string reqParam = "?crtfc_key=" + apiKey;
                 if (!string.IsNullOrEmpty(corp_code)) reqParam += "&corp_code=" + corp_code;
                 if (!string.IsNullOrEmpty(bsns_year)) reqParam += "&bsns_year=" + bsns_year;
                 if (!string.IsNullOrEmpty(reprt_code)) reqParam += "&reprt_code=" + reprt_code;
@@ -1086,36 +1014,34 @@ namespace OpenDart.OpenDartClient
                 if (isXml)
                 {
                     XmlSerializer reader = new XmlSerializer(typeof(ResIrdsSttusResult));
-                    ResIrdsSttusResult result = (ResIrdsSttusResult)reader.Deserialize(new MemoryStream(resData));
-                    result.displayConsole();
+                    result = (ResIrdsSttusResult)reader.Deserialize(new MemoryStream(resData));
+                    // result.displayConsole();
                 }
                 else
                 {
                     resJson = Encoding.UTF8.GetString(resData);
-                    //ResIrdsSttusResult result = new ResIrdsSttusResult();
-                    ResIrdsSttusResult result = JsonSerializer.Deserialize<ResIrdsSttusResult>(resJson);
-                    result.displayConsole();
+                    result = JsonSerializer.Deserialize<ResIrdsSttusResult>(resJson);
+                    // result.displayConsole();
                 }
             }
             catch (WebException e)
             {
                 displayWebException(e);
-                return false;
+                throw;
             }
             catch (Exception e)
             {
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
-                reqResultStatus.EXCEPTION = e.Message;
-                return false;
+                throw;
             }
             finally
             {
-                DebugEndProtocol();
+                debugEndProtocol();
             }
 
-            return true;
+            return result;
         }
 
         /******************************************************************************************************************************************************
@@ -1150,9 +1076,12 @@ namespace OpenDart.OpenDartClient
          *  string status = response.GetResponseHeader("status");
          *  string message = response.GetResponseHeader("message");
          */
-        public bool REQ2_2_GET_ALOT_MATTER_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
+        public ResAlotMatterResult REQ2_2_GET_ALOT_MATTER_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
         {
-            DebugBeginProtocol("REQ2_2_GET_ALOT_MATTER_INFO");
+            debugBeginProtocol("REQ2_2_GET_ALOT_MATTER_INFO");
+            checkApiKey();
+
+            ResAlotMatterResult result = null;
 
             try
             {
@@ -1166,13 +1095,7 @@ namespace OpenDart.OpenDartClient
                 byte[] reqData = Encoding.UTF8.GetBytes(reqJson);
 
                 // HTTP Request
-                string reqParam = string.Empty;
-                if (string.IsNullOrEmpty(apiKey))
-                {
-                    Console.WriteLine("Could not find the api key. Please set the api key.");
-                    return false;
-                }
-                reqParam += "?crtfc_key=" + apiKey;
+                string reqParam = "?crtfc_key=" + apiKey;
                 if (!string.IsNullOrEmpty(corp_code)) reqParam += "&corp_code=" + corp_code;
                 if (!string.IsNullOrEmpty(bsns_year)) reqParam += "&bsns_year=" + bsns_year;
                 if (!string.IsNullOrEmpty(reprt_code)) reqParam += "&reprt_code=" + reprt_code;
@@ -1227,36 +1150,34 @@ namespace OpenDart.OpenDartClient
                 if (isXml)
                 {
                     XmlSerializer reader = new XmlSerializer(typeof(ResAlotMatterResult));
-                    ResAlotMatterResult result = (ResAlotMatterResult)reader.Deserialize(new MemoryStream(resData));
-                    result.displayConsole();
+                    result = (ResAlotMatterResult)reader.Deserialize(new MemoryStream(resData));
+                    // result.displayConsole();
                 }
                 else
                 {
                     resJson = Encoding.UTF8.GetString(resData);
-                    //ResAlotMatterResult result = new ResAlotMatterResult();
-                    ResAlotMatterResult result = JsonSerializer.Deserialize<ResAlotMatterResult>(resJson);
-                    result.displayConsole();
+                    result = JsonSerializer.Deserialize<ResAlotMatterResult>(resJson);
+                    // result.displayConsole();
                 }
             }
             catch (WebException e)
             {
                 displayWebException(e);
-                return false;
+                throw;
             }
             catch (Exception e)
             {
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
-                reqResultStatus.EXCEPTION = e.Message;
-                return false;
+                throw;
             }
             finally
             {
-                DebugEndProtocol();
+                debugEndProtocol();
             }
 
-            return true;
+            return result;
         }
 
         /******************************************************************************************************************************************************
@@ -1291,9 +1212,12 @@ namespace OpenDart.OpenDartClient
          *  string status = response.GetResponseHeader("status");
          *  string message = response.GetResponseHeader("message");
          */
-        public bool REQ2_3_GET_TESSTK_ACQS_DSPS_STTUS_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
+        public ResTesstkAcqsDspsSttusResult REQ2_3_GET_TESSTK_ACQS_DSPS_STTUS_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
         {
-            DebugBeginProtocol("REQ2_3_GET_TESSTK_ACQS_DSPS_STTUS_INFO");
+            debugBeginProtocol("REQ2_3_GET_TESSTK_ACQS_DSPS_STTUS_INFO");
+            checkApiKey();
+
+            ResTesstkAcqsDspsSttusResult result = null;
 
             try
             {
@@ -1307,13 +1231,7 @@ namespace OpenDart.OpenDartClient
                 byte[] reqData = Encoding.UTF8.GetBytes(reqJson);
 
                 // HTTP Request
-                string reqParam = string.Empty;
-                if (string.IsNullOrEmpty(apiKey))
-                {
-                    Console.WriteLine("Could not find the api key. Please set the api key.");
-                    return false;
-                }
-                reqParam += "?crtfc_key=" + apiKey;
+                string reqParam = "?crtfc_key=" + apiKey;
                 if (!string.IsNullOrEmpty(corp_code)) reqParam += "&corp_code=" + corp_code;
                 if (!string.IsNullOrEmpty(bsns_year)) reqParam += "&bsns_year=" + bsns_year;
                 if (!string.IsNullOrEmpty(reprt_code)) reqParam += "&reprt_code=" + reprt_code;
@@ -1374,35 +1292,34 @@ namespace OpenDart.OpenDartClient
                 if (isXml)
                 {
                     XmlSerializer reader = new XmlSerializer(typeof(ResTesstkAcqsDspsSttusResult));
-                    ResTesstkAcqsDspsSttusResult result = (ResTesstkAcqsDspsSttusResult)reader.Deserialize(new MemoryStream(resData));
-                    result.displayConsole();
+                    result = (ResTesstkAcqsDspsSttusResult)reader.Deserialize(new MemoryStream(resData));
+                    // result.displayConsole();
                 }
                 else
                 {
                     resJson = Encoding.UTF8.GetString(resData);
-                    ResTesstkAcqsDspsSttusResult result = JsonSerializer.Deserialize<ResTesstkAcqsDspsSttusResult>(resJson);
-                    result.displayConsole();
+                    result = JsonSerializer.Deserialize<ResTesstkAcqsDspsSttusResult>(resJson);
+                    // result.displayConsole();
                 }
             }
             catch (WebException e)
             {
                 displayWebException(e);
-                return false;
+                throw;
             }
             catch (Exception e)
             {
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
-                reqResultStatus.EXCEPTION = e.Message;
-                return false;
+                throw;
             }
             finally
             {
-                DebugEndProtocol();
+                debugEndProtocol();
             }
 
-            return true;
+            return result;
         }
 
         /******************************************************************************************************************************************************
@@ -1437,9 +1354,12 @@ namespace OpenDart.OpenDartClient
          *  string status = response.GetResponseHeader("status");
          *  string message = response.GetResponseHeader("message");
          */
-        public bool REQ2_4_GET_HYSLR_STTUS_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
+        public ResHyslrSttusResult REQ2_4_GET_HYSLR_STTUS_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
         {
-            DebugBeginProtocol("REQ2_4_GET_HYSLR_STTUS_INFO");
+            debugBeginProtocol("REQ2_4_GET_HYSLR_STTUS_INFO");
+            checkApiKey();
+
+            ResHyslrSttusResult result = null;
 
             try
             {
@@ -1453,13 +1373,7 @@ namespace OpenDart.OpenDartClient
                 byte[] reqData = Encoding.UTF8.GetBytes(reqJson);
 
                 // HTTP Request
-                string reqParam = string.Empty;
-                if (string.IsNullOrEmpty(apiKey))
-                {
-                    Console.WriteLine("Could not find the api key. Please set the api key.");
-                    return false;
-                }
-                reqParam += "?crtfc_key=" + apiKey;
+                string reqParam = "?crtfc_key=" + apiKey;
                 if (!string.IsNullOrEmpty(corp_code)) reqParam += "&corp_code=" + corp_code;
                 if (!string.IsNullOrEmpty(bsns_year)) reqParam += "&bsns_year=" + bsns_year;
                 if (!string.IsNullOrEmpty(reprt_code)) reqParam += "&reprt_code=" + reprt_code;
@@ -1519,35 +1433,34 @@ namespace OpenDart.OpenDartClient
                 if (isXml)
                 {
                     XmlSerializer reader = new XmlSerializer(typeof(ResHyslrSttusResult));
-                    ResHyslrSttusResult result = (ResHyslrSttusResult)reader.Deserialize(new MemoryStream(resData));
-                    result.displayConsole();
+                    result = (ResHyslrSttusResult)reader.Deserialize(new MemoryStream(resData));
+                    // result.displayConsole();
                 }
                 else
                 {
                     resJson = Encoding.UTF8.GetString(resData);
-                    ResHyslrSttusResult result = JsonSerializer.Deserialize<ResHyslrSttusResult>(resJson);
-                    result.displayConsole();
+                    result = JsonSerializer.Deserialize<ResHyslrSttusResult>(resJson);
+                    // result.displayConsole();
                 }
             }
             catch (WebException e)
             {
                 displayWebException(e);
-                return false;
+                throw;
             }
             catch (Exception e)
             {
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
-                reqResultStatus.EXCEPTION = e.Message;
-                return false;
+                throw;
             }
             finally
             {
-                DebugEndProtocol();
+                debugEndProtocol();
             }
 
-            return true;
+            return result;
         }
 
         /******************************************************************************************************************************************************
@@ -1582,9 +1495,12 @@ namespace OpenDart.OpenDartClient
          *  string status = response.GetResponseHeader("status");
          *  string message = response.GetResponseHeader("message");
          */
-        public bool REQ2_5_GET_HYSLR_CHG_STTUS_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
+        public ResHyslrChgSttusResult REQ2_5_GET_HYSLR_CHG_STTUS_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
         {
-            DebugBeginProtocol("REQ2_5_GET_HYSLR_CHG_STTUS_INFO");
+            debugBeginProtocol("REQ2_5_GET_HYSLR_CHG_STTUS_INFO");
+            checkApiKey();
+
+            ResHyslrChgSttusResult result = null;
 
             try
             {
@@ -1598,13 +1514,7 @@ namespace OpenDart.OpenDartClient
                 byte[] reqData = Encoding.UTF8.GetBytes(reqJson);
 
                 // HTTP Request
-                string reqParam = string.Empty;
-                if (string.IsNullOrEmpty(apiKey))
-                {
-                    Console.WriteLine("Could not find the api key. Please set the api key.");
-                    return false;
-                }
-                reqParam += "?crtfc_key=" + apiKey;
+                string reqParam = "?crtfc_key=" + apiKey;
                 if (!string.IsNullOrEmpty(corp_code)) reqParam += "&corp_code=" + corp_code;
                 if (!string.IsNullOrEmpty(bsns_year)) reqParam += "&bsns_year=" + bsns_year;
                 if (!string.IsNullOrEmpty(reprt_code)) reqParam += "&reprt_code=" + reprt_code;
@@ -1661,35 +1571,34 @@ namespace OpenDart.OpenDartClient
                 if (isXml)
                 {
                     XmlSerializer reader = new XmlSerializer(typeof(ResHyslrChgSttusResult));
-                    ResHyslrChgSttusResult result = (ResHyslrChgSttusResult)reader.Deserialize(new MemoryStream(resData));
-                    result.displayConsole();
+                    result = (ResHyslrChgSttusResult)reader.Deserialize(new MemoryStream(resData));
+                    // result.displayConsole();
                 }
                 else
                 {
                     resJson = Encoding.UTF8.GetString(resData);
-                    ResHyslrChgSttusResult result = JsonSerializer.Deserialize<ResHyslrChgSttusResult>(resJson);
-                    result.displayConsole();
+                    result = JsonSerializer.Deserialize<ResHyslrChgSttusResult>(resJson);
+                    // result.displayConsole();
                 }
             }
             catch (WebException e)
             {
                 displayWebException(e);
-                return false;
+                throw;
             }
             catch (Exception e)
             {
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
-                reqResultStatus.EXCEPTION = e.Message;
-                return false;
+                throw;
             }
             finally
             {
-                DebugEndProtocol();
+                debugEndProtocol();
             }
 
-            return true;
+            return result;
         }
 
         /******************************************************************************************************************************************************
@@ -1724,9 +1633,12 @@ namespace OpenDart.OpenDartClient
          *  string status = response.GetResponseHeader("status");
          *  string message = response.GetResponseHeader("message");
          */
-        public bool REQ2_6_GET_MRHL_STTUS_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
+        public ResMrhlSttusResult REQ2_6_GET_MRHL_STTUS_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
         {
-            DebugBeginProtocol("REQ2_6_GET_MRHL_STTUS_INFO");
+            debugBeginProtocol("REQ2_6_GET_MRHL_STTUS_INFO");
+            checkApiKey();
+
+            ResMrhlSttusResult result = null;
 
             try
             {
@@ -1740,13 +1652,7 @@ namespace OpenDart.OpenDartClient
                 byte[] reqData = Encoding.UTF8.GetBytes(reqJson);
 
                 // HTTP Request
-                string reqParam = string.Empty;
-                if (string.IsNullOrEmpty(apiKey))
-                {
-                    Console.WriteLine("Could not find the api key. Please set the api key.");
-                    return false;
-                }
-                reqParam += "?crtfc_key=" + apiKey;
+                string reqParam = "?crtfc_key=" + apiKey;
                 if (!string.IsNullOrEmpty(corp_code)) reqParam += "&corp_code=" + corp_code;
                 if (!string.IsNullOrEmpty(bsns_year)) reqParam += "&bsns_year=" + bsns_year;
                 if (!string.IsNullOrEmpty(reprt_code)) reqParam += "&reprt_code=" + reprt_code;
@@ -1804,35 +1710,34 @@ namespace OpenDart.OpenDartClient
                 if (isXml)
                 {
                     XmlSerializer reader = new XmlSerializer(typeof(ResMrhlSttusResult));
-                    ResMrhlSttusResult result = (ResMrhlSttusResult)reader.Deserialize(new MemoryStream(resData));
-                    result.displayConsole();
+                    result = (ResMrhlSttusResult)reader.Deserialize(new MemoryStream(resData));
+                    // result.displayConsole();
                 }
                 else
                 {
                     resJson = Encoding.UTF8.GetString(resData);
-                    ResMrhlSttusResult result = JsonSerializer.Deserialize<ResMrhlSttusResult>(resJson);
-                    result.displayConsole();
+                    result = JsonSerializer.Deserialize<ResMrhlSttusResult>(resJson);
+                    // result.displayConsole();
                 }
             }
             catch (WebException e)
             {
                 displayWebException(e);
-                return false;
+                throw;
             }
             catch (Exception e)
             {
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
-                reqResultStatus.EXCEPTION = e.Message;
-                return false;
+                throw;
             }
             finally
             {
-                DebugEndProtocol();
+                debugEndProtocol();
             }
 
-            return true;
+            return result;
         }
 
         /******************************************************************************************************************************************************
@@ -1867,9 +1772,12 @@ namespace OpenDart.OpenDartClient
          *  string status = response.GetResponseHeader("status");
          *  string message = response.GetResponseHeader("message");
          */
-        public bool REQ2_7_GET_EXCTV_STTUS_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
+        public ResExctvSttusResult REQ2_7_GET_EXCTV_STTUS_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
         {
-            DebugBeginProtocol("REQ2_7_GET_EXCTV_STTUS_INFO");
+            debugBeginProtocol("REQ2_7_GET_EXCTV_STTUS_INFO");
+            checkApiKey();
+
+            ResExctvSttusResult result = null;
 
             try
             {
@@ -1883,13 +1791,7 @@ namespace OpenDart.OpenDartClient
                 byte[] reqData = Encoding.UTF8.GetBytes(reqJson);
 
                 // HTTP Request
-                string reqParam = string.Empty;
-                if (string.IsNullOrEmpty(apiKey))
-                {
-                    Console.WriteLine("Could not find the api key. Please set the api key.");
-                    return false;
-                }
-                reqParam += "?crtfc_key=" + apiKey;
+                string reqParam = "?crtfc_key=" + apiKey;
                 if (!string.IsNullOrEmpty(corp_code)) reqParam += "&corp_code=" + corp_code;
                 if (!string.IsNullOrEmpty(bsns_year)) reqParam += "&bsns_year=" + bsns_year;
                 if (!string.IsNullOrEmpty(reprt_code)) reqParam += "&reprt_code=" + reprt_code;
@@ -1951,35 +1853,34 @@ namespace OpenDart.OpenDartClient
                 if (isXml)
                 {
                     XmlSerializer reader = new XmlSerializer(typeof(ResExctvSttusResult));
-                    ResExctvSttusResult result = (ResExctvSttusResult)reader.Deserialize(new MemoryStream(resData));
-                    result.displayConsole();
+                    result = (ResExctvSttusResult)reader.Deserialize(new MemoryStream(resData));
+                    // result.displayConsole();
                 }
                 else
                 {
                     resJson = Encoding.UTF8.GetString(resData);
-                    ResExctvSttusResult result = JsonSerializer.Deserialize<ResExctvSttusResult>(resJson);
-                    result.displayConsole();
+                    result = JsonSerializer.Deserialize<ResExctvSttusResult>(resJson);
+                    // result.displayConsole();
                 }
             }
             catch (WebException e)
             {
                 displayWebException(e);
-                return false;
+                throw;
             }
             catch (Exception e)
             {
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
-                reqResultStatus.EXCEPTION = e.Message;
-                return false;
+                throw;
             }
             finally
             {
-                DebugEndProtocol();
+                debugEndProtocol();
             }
 
-            return true;
+            return result;
         }
 
         /******************************************************************************************************************************************************
@@ -2014,9 +1915,12 @@ namespace OpenDart.OpenDartClient
          *  string status = response.GetResponseHeader("status");
          *  string message = response.GetResponseHeader("message");
          */
-        public bool REQ2_8_GET_EMP_STTUS_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
+        public ResEmpSttusResult REQ2_8_GET_EMP_STTUS_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
         {
-            DebugBeginProtocol("REQ2_8_GET_EMP_STTUS_INFO");
+            debugBeginProtocol("REQ2_8_GET_EMP_STTUS_INFO");
+            checkApiKey();
+
+            ResEmpSttusResult result = null;
 
             try
             {
@@ -2030,13 +1934,7 @@ namespace OpenDart.OpenDartClient
                 byte[] reqData = Encoding.UTF8.GetBytes(reqJson);
 
                 // HTTP Request
-                string reqParam = string.Empty;
-                if (string.IsNullOrEmpty(apiKey))
-                {
-                    Console.WriteLine("Could not find the api key. Please set the api key.");
-                    return false;
-                }
-                reqParam += "?crtfc_key=" + apiKey;
+                string reqParam = "?crtfc_key=" + apiKey;
                 if (!string.IsNullOrEmpty(corp_code)) reqParam += "&corp_code=" + corp_code;
                 if (!string.IsNullOrEmpty(bsns_year)) reqParam += "&bsns_year=" + bsns_year;
                 if (!string.IsNullOrEmpty(reprt_code)) reqParam += "&reprt_code=" + reprt_code;
@@ -2101,35 +1999,34 @@ namespace OpenDart.OpenDartClient
                 if (isXml)
                 {
                     XmlSerializer reader = new XmlSerializer(typeof(ResEmpSttusResult));
-                    ResEmpSttusResult result = (ResEmpSttusResult)reader.Deserialize(new MemoryStream(resData));
-                    result.displayConsole();
+                    result = (ResEmpSttusResult)reader.Deserialize(new MemoryStream(resData));
+                    // result.displayConsole();
                 }
                 else
                 {
                     resJson = Encoding.UTF8.GetString(resData);
-                    ResEmpSttusResult result = JsonSerializer.Deserialize<ResEmpSttusResult>(resJson);
-                    result.displayConsole();
+                    result = JsonSerializer.Deserialize<ResEmpSttusResult>(resJson);
+                    // result.displayConsole();
                 }
             }
             catch (WebException e)
             {
                 displayWebException(e);
-                return false;
+                throw;
             }
             catch (Exception e)
             {
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
-                reqResultStatus.EXCEPTION = e.Message;
-                return false;
+                throw;
             }
             finally
             {
-                DebugEndProtocol();
+                debugEndProtocol();
             }
 
-            return true;
+            return result;
         }
 
         /******************************************************************************************************************************************************
@@ -2164,9 +2061,12 @@ namespace OpenDart.OpenDartClient
          *  string status = response.GetResponseHeader("status");
          *  string message = response.GetResponseHeader("message");
          */
-        public bool REQ2_9_GET_HMV_AUDIT_INDVDL_BY_STTUS_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
+        public ResHmvAuditIndvdlBySttusResult REQ2_9_GET_HMV_AUDIT_INDVDL_BY_STTUS_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
         {
-            DebugBeginProtocol("REQ2_9_GET_HMV_AUDIT_INDVDL_BY_STTUS_INFO");
+            debugBeginProtocol("REQ2_9_GET_HMV_AUDIT_INDVDL_BY_STTUS_INFO");
+            checkApiKey();
+
+            ResHmvAuditIndvdlBySttusResult result = null;
 
             try
             {
@@ -2180,13 +2080,7 @@ namespace OpenDart.OpenDartClient
                 byte[] reqData = Encoding.UTF8.GetBytes(reqJson);
 
                 // HTTP Request
-                string reqParam = string.Empty;
-                if (string.IsNullOrEmpty(apiKey))
-                {
-                    Console.WriteLine("Could not find the api key. Please set the api key.");
-                    return false;
-                }
-                reqParam += "?crtfc_key=" + apiKey;
+                string reqParam = "?crtfc_key=" + apiKey;
                 if (!string.IsNullOrEmpty(corp_code)) reqParam += "&corp_code=" + corp_code;
                 if (!string.IsNullOrEmpty(bsns_year)) reqParam += "&bsns_year=" + bsns_year;
                 if (!string.IsNullOrEmpty(reprt_code)) reqParam += "&reprt_code=" + reprt_code;
@@ -2241,35 +2135,34 @@ namespace OpenDart.OpenDartClient
                 if (isXml)
                 {
                     XmlSerializer reader = new XmlSerializer(typeof(ResHmvAuditIndvdlBySttusResult));
-                    ResHmvAuditIndvdlBySttusResult result = (ResHmvAuditIndvdlBySttusResult)reader.Deserialize(new MemoryStream(resData));
-                    result.displayConsole();
+                    result = (ResHmvAuditIndvdlBySttusResult)reader.Deserialize(new MemoryStream(resData));
+                    // result.displayConsole();
                 }
                 else
                 {
                     resJson = Encoding.UTF8.GetString(resData);
-                    ResHmvAuditIndvdlBySttusResult result = JsonSerializer.Deserialize<ResHmvAuditIndvdlBySttusResult>(resJson);
-                    result.displayConsole();
+                    result = JsonSerializer.Deserialize<ResHmvAuditIndvdlBySttusResult>(resJson);
+                    // result.displayConsole();
                 }
             }
             catch (WebException e)
             {
                 displayWebException(e);
-                return false;
+                throw;
             }
             catch (Exception e)
             {
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
-                reqResultStatus.EXCEPTION = e.Message;
-                return false;
+                throw;
             }
             finally
             {
-                DebugEndProtocol();
+                debugEndProtocol();
             }
 
-            return true;
+            return result;
         }
 
         /******************************************************************************************************************************************************
@@ -2304,9 +2197,12 @@ namespace OpenDart.OpenDartClient
          *  string status = response.GetResponseHeader("status");
          *  string message = response.GetResponseHeader("message");
          */
-        public bool REQ2_10_GET_HMV_AUDIT_ALL_STTUS_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
+        public ResHmvAuditAllSttusResult REQ2_10_GET_HMV_AUDIT_ALL_STTUS_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
         {
-            DebugBeginProtocol("REQ2_10_GET_HMV_AUDIT_ALL_STTUS_INFO");
+            debugBeginProtocol("REQ2_10_GET_HMV_AUDIT_ALL_STTUS_INFO");
+            checkApiKey();
+
+            ResHmvAuditAllSttusResult result = null;
 
             try
             {
@@ -2320,13 +2216,7 @@ namespace OpenDart.OpenDartClient
                 byte[] reqData = Encoding.UTF8.GetBytes(reqJson);
 
                 // HTTP Request
-                string reqParam = string.Empty;
-                if (string.IsNullOrEmpty(apiKey))
-                {
-                    Console.WriteLine("Could not find the api key. Please set the api key.");
-                    return false;
-                }
-                reqParam += "?crtfc_key=" + apiKey;
+                string reqParam = "?crtfc_key=" + apiKey;
                 if (!string.IsNullOrEmpty(corp_code)) reqParam += "&corp_code=" + corp_code;
                 if (!string.IsNullOrEmpty(bsns_year)) reqParam += "&bsns_year=" + bsns_year;
                 if (!string.IsNullOrEmpty(reprt_code)) reqParam += "&reprt_code=" + reprt_code;
@@ -2381,35 +2271,34 @@ namespace OpenDart.OpenDartClient
                 if (isXml)
                 {
                     XmlSerializer reader = new XmlSerializer(typeof(ResHmvAuditAllSttusResult));
-                    ResHmvAuditAllSttusResult result = (ResHmvAuditAllSttusResult)reader.Deserialize(new MemoryStream(resData));
-                    result.displayConsole();
+                    result = (ResHmvAuditAllSttusResult)reader.Deserialize(new MemoryStream(resData));
+                    // result.displayConsole();
                 }
                 else
                 {
                     resJson = Encoding.UTF8.GetString(resData);
-                    ResHmvAuditAllSttusResult result = JsonSerializer.Deserialize<ResHmvAuditAllSttusResult>(resJson);
-                    result.displayConsole();
+                    result = JsonSerializer.Deserialize<ResHmvAuditAllSttusResult>(resJson);
+                    // result.displayConsole();
                 }
             }
             catch (WebException e)
             {
                 displayWebException(e);
-                return false;
+                throw;
             }
             catch (Exception e)
             {
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
-                reqResultStatus.EXCEPTION = e.Message;
-                return false;
+                throw;
             }
             finally
             {
-                DebugEndProtocol();
+                debugEndProtocol();
             }
 
-            return true;
+            return result;
         }
 
         /******************************************************************************************************************************************************
@@ -2444,9 +2333,12 @@ namespace OpenDart.OpenDartClient
          *  string status = response.GetResponseHeader("status");
          *  string message = response.GetResponseHeader("message");
          */
-        public bool REQ2_11_GET_INDVDL_BY_PAY_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
+        public ResIndvdlByPayResult REQ2_11_GET_INDVDL_BY_PAY_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
         {
-            DebugBeginProtocol("REQ2_11_GET_INDVDL_BY_PAY_INFO");
+            debugBeginProtocol("REQ2_11_GET_INDVDL_BY_PAY_INFO");
+            checkApiKey();
+
+            ResIndvdlByPayResult result = null;
 
             try
             {
@@ -2460,13 +2352,7 @@ namespace OpenDart.OpenDartClient
                 byte[] reqData = Encoding.UTF8.GetBytes(reqJson);
 
                 // HTTP Request
-                string reqParam = string.Empty;
-                if (string.IsNullOrEmpty(apiKey))
-                {
-                    Console.WriteLine("Could not find the api key. Please set the api key.");
-                    return false;
-                }
-                reqParam += "?crtfc_key=" + apiKey;
+                string reqParam = "?crtfc_key=" + apiKey;
                 if (!string.IsNullOrEmpty(corp_code)) reqParam += "&corp_code=" + corp_code;
                 if (!string.IsNullOrEmpty(bsns_year)) reqParam += "&bsns_year=" + bsns_year;
                 if (!string.IsNullOrEmpty(reprt_code)) reqParam += "&reprt_code=" + reprt_code;
@@ -2521,35 +2407,34 @@ namespace OpenDart.OpenDartClient
                 if (isXml)
                 {
                     XmlSerializer reader = new XmlSerializer(typeof(ResIndvdlByPayResult));
-                    ResIndvdlByPayResult result = (ResIndvdlByPayResult)reader.Deserialize(new MemoryStream(resData));
-                    result.displayConsole();
+                    result = (ResIndvdlByPayResult)reader.Deserialize(new MemoryStream(resData));
+                    // result.displayConsole();
                 }
                 else
                 {
                     resJson = Encoding.UTF8.GetString(resData);
-                    ResIndvdlByPayResult result = JsonSerializer.Deserialize<ResIndvdlByPayResult>(resJson);
-                    result.displayConsole();
+                    result = JsonSerializer.Deserialize<ResIndvdlByPayResult>(resJson);
+                    // result.displayConsole();
                 }
             }
             catch (WebException e)
             {
                 displayWebException(e);
-                return false;
+                throw;
             }
             catch (Exception e)
             {
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
-                reqResultStatus.EXCEPTION = e.Message;
-                return false;
+                throw;
             }
             finally
             {
-                DebugEndProtocol();
+                debugEndProtocol();
             }
 
-            return true;
+            return result;
         }
 
         /******************************************************************************************************************************************************
@@ -2584,9 +2469,12 @@ namespace OpenDart.OpenDartClient
          *  string status = response.GetResponseHeader("status");
          *  string message = response.GetResponseHeader("message");
          */
-        public bool REQ2_12_GET_OTR_CPR_INVSTMNT_STTUS_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
+        public ResOtrCprInvstmntSttusResult REQ2_12_GET_OTR_CPR_INVSTMNT_STTUS_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
         {
-            DebugBeginProtocol("REQ2_12_GET_OTR_CPR_INVSTMNT_STTUS_INFO");
+            debugBeginProtocol("REQ2_12_GET_OTR_CPR_INVSTMNT_STTUS_INFO");
+            checkApiKey();
+
+            ResOtrCprInvstmntSttusResult result = null;
 
             try
             {
@@ -2600,13 +2488,7 @@ namespace OpenDart.OpenDartClient
                 byte[] reqData = Encoding.UTF8.GetBytes(reqJson);
 
                 // HTTP Request
-                string reqParam = string.Empty;
-                if (string.IsNullOrEmpty(apiKey))
-                {
-                    Console.WriteLine("Could not find the api key. Please set the api key.");
-                    return false;
-                }
-                reqParam += "?crtfc_key=" + apiKey;
+                string reqParam = "?crtfc_key=" + apiKey;
                 if (!string.IsNullOrEmpty(corp_code)) reqParam += "&corp_code=" + corp_code;
                 if (!string.IsNullOrEmpty(bsns_year)) reqParam += "&bsns_year=" + bsns_year;
                 if (!string.IsNullOrEmpty(reprt_code)) reqParam += "&reprt_code=" + reprt_code;
@@ -2672,35 +2554,34 @@ namespace OpenDart.OpenDartClient
                 if (isXml)
                 {
                     XmlSerializer reader = new XmlSerializer(typeof(ResOtrCprInvstmntSttusResult));
-                    ResOtrCprInvstmntSttusResult result = (ResOtrCprInvstmntSttusResult)reader.Deserialize(new MemoryStream(resData));
-                    result.displayConsole();
+                    result = (ResOtrCprInvstmntSttusResult)reader.Deserialize(new MemoryStream(resData));
+                    // result.displayConsole();
                 }
                 else
                 {
                     resJson = Encoding.UTF8.GetString(resData);
-                    ResOtrCprInvstmntSttusResult result = JsonSerializer.Deserialize<ResOtrCprInvstmntSttusResult>(resJson);
-                    result.displayConsole();
+                    result = JsonSerializer.Deserialize<ResOtrCprInvstmntSttusResult>(resJson);
+                    // result.displayConsole();
                 }
             }
             catch (WebException e)
             {
                 displayWebException(e);
-                return false;
+                throw;
             }
             catch (Exception e)
             {
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
-                reqResultStatus.EXCEPTION = e.Message;
-                return false;
+                throw;
             }
             finally
             {
-                DebugEndProtocol();
+                debugEndProtocol();
             }
 
-            return true;
+            return result;
         }
 
         /******************************************************************************************************************************************************
@@ -2735,9 +2616,12 @@ namespace OpenDart.OpenDartClient
          *  string status = response.GetResponseHeader("status");
          *  string message = response.GetResponseHeader("message");
          */
-        public bool REQ3_1_GET_FNLTT_SINGL_ACNT_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
+        public ResFnlttSinglAcntResult REQ3_1_GET_FNLTT_SINGL_ACNT_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
         {
-            DebugBeginProtocol("REQ3_1_GET_FNLTT_SINGL_ACNT_INFO");
+            debugBeginProtocol("REQ3_1_GET_FNLTT_SINGL_ACNT_INFO");
+            checkApiKey();
+
+            ResFnlttSinglAcntResult result = null;
 
             try
             {
@@ -2751,13 +2635,7 @@ namespace OpenDart.OpenDartClient
                 byte[] reqData = Encoding.UTF8.GetBytes(reqJson);
 
                 // HTTP Request
-                string reqParam = string.Empty;
-                if (string.IsNullOrEmpty(apiKey))
-                {
-                    Console.WriteLine("Could not find the api key. Please set the api key.");
-                    return false;
-                }
-                reqParam += "?crtfc_key=" + apiKey;
+                string reqParam = "?crtfc_key=" + apiKey;
                 if (!string.IsNullOrEmpty(corp_code)) reqParam += "&corp_code=" + corp_code;
                 if (!string.IsNullOrEmpty(bsns_year)) reqParam += "&bsns_year=" + bsns_year;
                 if (!string.IsNullOrEmpty(reprt_code)) reqParam += "&reprt_code=" + reprt_code;
@@ -2824,35 +2702,34 @@ namespace OpenDart.OpenDartClient
                 if (isXml)
                 {
                     XmlSerializer reader = new XmlSerializer(typeof(ResFnlttSinglAcntResult));
-                    ResFnlttSinglAcntResult result = (ResFnlttSinglAcntResult)reader.Deserialize(new MemoryStream(resData));
-                    result.displayConsole();
+                    result = (ResFnlttSinglAcntResult)reader.Deserialize(new MemoryStream(resData));
+                    // result.displayConsole();
                 }
                 else
                 {
                     resJson = Encoding.UTF8.GetString(resData);
-                    ResFnlttSinglAcntResult result = JsonSerializer.Deserialize<ResFnlttSinglAcntResult>(resJson);
-                    result.displayConsole();
+                    result = JsonSerializer.Deserialize<ResFnlttSinglAcntResult>(resJson);
+                    // result.displayConsole();
                 }
             }
             catch (WebException e)
             {
                 displayWebException(e);
-                return false;
+                throw;
             }
             catch (Exception e)
             {
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
-                reqResultStatus.EXCEPTION = e.Message;
-                return false;
+                throw;
             }
             finally
             {
-                DebugEndProtocol();
+                debugEndProtocol();
             }
 
-            return true;
+            return result;
         }
 
         /******************************************************************************************************************************************************
@@ -2887,9 +2764,12 @@ namespace OpenDart.OpenDartClient
          *  string status = response.GetResponseHeader("status");
          *  string message = response.GetResponseHeader("message");
          */
-        public bool REQ3_2_GET_FNLTT_MULTI_ACNT_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
+        public ResFnlttMultiAcntResult REQ3_2_GET_FNLTT_MULTI_ACNT_INFO(string corp_code, string bsns_year, string reprt_code, bool isXml = false)
         {
-            DebugBeginProtocol("REQ3_2_GET_FNLTT_MULTI_ACNT_INFO");
+            debugBeginProtocol("REQ3_2_GET_FNLTT_MULTI_ACNT_INFO");
+            checkApiKey();
+
+            ResFnlttMultiAcntResult result = null;
 
             try
             {
@@ -2903,13 +2783,7 @@ namespace OpenDart.OpenDartClient
                 byte[] reqData = Encoding.UTF8.GetBytes(reqJson);
 
                 // HTTP Request
-                string reqParam = string.Empty;
-                if (string.IsNullOrEmpty(apiKey))
-                {
-                    Console.WriteLine("Could not find the api key. Please set the api key.");
-                    return false;
-                }
-                reqParam += "?crtfc_key=" + apiKey;
+                string reqParam = "?crtfc_key=" + apiKey;
                 if (!string.IsNullOrEmpty(corp_code)) reqParam += "&corp_code=" + corp_code;
                 if (!string.IsNullOrEmpty(bsns_year)) reqParam += "&bsns_year=" + bsns_year;
                 if (!string.IsNullOrEmpty(reprt_code)) reqParam += "&reprt_code=" + reprt_code;
@@ -2976,35 +2850,34 @@ namespace OpenDart.OpenDartClient
                 if (isXml)
                 {
                     XmlSerializer reader = new XmlSerializer(typeof(ResFnlttMultiAcntResult));
-                    ResFnlttMultiAcntResult result = (ResFnlttMultiAcntResult)reader.Deserialize(new MemoryStream(resData));
-                    result.displayConsole();
+                    result = (ResFnlttMultiAcntResult)reader.Deserialize(new MemoryStream(resData));
+                    // result.displayConsole();
                 }
                 else
                 {
                     resJson = Encoding.UTF8.GetString(resData);
-                    ResFnlttMultiAcntResult result = JsonSerializer.Deserialize<ResFnlttMultiAcntResult>(resJson);
-                    result.displayConsole();
+                    result = JsonSerializer.Deserialize<ResFnlttMultiAcntResult>(resJson);
+                    // result.displayConsole();
                 }
             }
             catch (WebException e)
             {
                 displayWebException(e);
-                return false;
+                throw;
             }
             catch (Exception e)
             {
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
-                reqResultStatus.EXCEPTION = e.Message;
-                return false;
+                throw;
             }
             finally
             {
-                DebugEndProtocol();
+                debugEndProtocol();
             }
 
-            return true;
+            return result;
         }
 
         /******************************************************************************************************************************************************
@@ -3036,9 +2909,12 @@ namespace OpenDart.OpenDartClient
          *  string status = response.GetResponseHeader("status");
          *  string message = response.GetResponseHeader("message");
          */
-        public bool REQ3_3_GET_FNLTT_XBRL_INFO(string rcept_no, string reprt_code)
+        public string REQ3_3_GET_FNLTT_XBRL_INFO(string rcept_no, string reprt_code)
         {
-            DebugBeginProtocol("REQ3_2_GET_FNLTT_XBRL_INFO");
+            debugBeginProtocol("REQ3_2_GET_FNLTT_XBRL_INFO");
+            checkApiKey();
+
+            string result = null;
 
             try
             {
@@ -3052,13 +2928,7 @@ namespace OpenDart.OpenDartClient
                 byte[] reqData = Encoding.UTF8.GetBytes(reqJson);
 
                 // HTTP Request
-                string reqParam = string.Empty;
-                if (string.IsNullOrEmpty(apiKey))
-                {
-                    Console.WriteLine("Could not find the api key. Please set the api key.");
-                    return false;
-                }
-                reqParam += "?crtfc_key=" + apiKey;
+                string reqParam = "?crtfc_key=" + apiKey;
                 if (!string.IsNullOrEmpty(rcept_no)) reqParam += "&rcept_no=" + rcept_no;
                 if (!string.IsNullOrEmpty(reprt_code)) reqParam += "&reprt_code=" + reprt_code;
 
@@ -3127,26 +2997,27 @@ namespace OpenDart.OpenDartClient
                 //    dummyCorps = (DummyCorps)reader.Deserialize(file);
                 //    file.Close();
                 //}
+
+                result = zipDirectory;
             }
             catch (WebException e)
             {
                 displayWebException(e);
-                return false;
+                throw;
             }
             catch (Exception e)
             {
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
-                reqResultStatus.EXCEPTION = e.Message;
-                return false;
+                throw;
             }
             finally
             {
-                DebugEndProtocol();
+                debugEndProtocol();
             }
 
-            return true;
+            return result;
         }
 
         /******************************************************************************************************************************************************
@@ -3183,9 +3054,12 @@ namespace OpenDart.OpenDartClient
          *  string status = response.GetResponseHeader("status");
          *  string message = response.GetResponseHeader("message");
          */
-        public bool REQ3_4_GET_FNLTT_SINGL_ACNT_ALL_INFO(string corp_code, string bsns_year, string reprt_code, string fs_div, bool isXml = false)
+        public ResFnlttSinglAcntAllResult REQ3_4_GET_FNLTT_SINGL_ACNT_ALL_INFO(string corp_code, string bsns_year, string reprt_code, string fs_div, bool isXml = false)
         {
-            DebugBeginProtocol("REQ3_4_GET_FNLTT_SINGL_ACNT_ALL_INFO");
+            debugBeginProtocol("REQ3_4_GET_FNLTT_SINGL_ACNT_ALL_INFO");
+            checkApiKey();
+
+            ResFnlttSinglAcntAllResult result = null;
 
             try
             {
@@ -3199,13 +3073,7 @@ namespace OpenDart.OpenDartClient
                 byte[] reqData = Encoding.UTF8.GetBytes(reqJson);
 
                 // HTTP Request
-                string reqParam = string.Empty;
-                if (string.IsNullOrEmpty(apiKey))
-                {
-                    Console.WriteLine("Could not find the api key. Please set the api key.");
-                    return false;
-                }
-                reqParam += "?crtfc_key=" + apiKey;
+                string reqParam = "?crtfc_key=" + apiKey;
                 if (!string.IsNullOrEmpty(corp_code)) reqParam += "&corp_code=" + corp_code;
                 if (!string.IsNullOrEmpty(bsns_year)) reqParam += "&bsns_year=" + bsns_year;
                 if (!string.IsNullOrEmpty(reprt_code)) reqParam += "&reprt_code=" + reprt_code;
@@ -3269,35 +3137,34 @@ namespace OpenDart.OpenDartClient
                 if (isXml)
                 {
                     XmlSerializer reader = new XmlSerializer(typeof(ResFnlttSinglAcntAllResult));
-                    ResFnlttSinglAcntAllResult result = (ResFnlttSinglAcntAllResult)reader.Deserialize(new MemoryStream(resData));
-                    result.displayConsole();
+                    result = (ResFnlttSinglAcntAllResult)reader.Deserialize(new MemoryStream(resData));
+                    // result.displayConsole();
                 }
                 else
                 {
                     resJson = Encoding.UTF8.GetString(resData);
-                    ResFnlttSinglAcntAllResult result = JsonSerializer.Deserialize<ResFnlttSinglAcntAllResult>(resJson);
-                    result.displayConsole();
+                    result = JsonSerializer.Deserialize<ResFnlttSinglAcntAllResult>(resJson);
+                    // result.displayConsole();
                 }
             }
             catch (WebException e)
             {
                 displayWebException(e);
-                return false;
+                throw;
             }
             catch (Exception e)
             {
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
-                reqResultStatus.EXCEPTION = e.Message;
-                return false;
+                throw;
             }
             finally
             {
-                DebugEndProtocol();
+                debugEndProtocol();
             }
 
-            return true;
+            return result;
         }
 
         // 재무제표구분
@@ -3364,9 +3231,12 @@ namespace OpenDart.OpenDartClient
          *  string status = response.GetResponseHeader("status");
          *  string message = response.GetResponseHeader("message");
          */
-        public bool REQ3_5_GET_XBRL_TAXONOMY_INFO(SJ_DIV sj_div, bool isXml = false)
+        public ResXbrlTaxonomyResult REQ3_5_GET_XBRL_TAXONOMY_INFO(SJ_DIV sj_div, bool isXml = false)
         {
-            DebugBeginProtocol("REQ3_5_GET_XBRL_TAXONOMY_INFO");
+            debugBeginProtocol("REQ3_5_GET_XBRL_TAXONOMY_INFO");
+            checkApiKey();
+
+            ResXbrlTaxonomyResult result = null;
 
             try
             {
@@ -3380,13 +3250,7 @@ namespace OpenDart.OpenDartClient
                 byte[] reqData = Encoding.UTF8.GetBytes(reqJson);
 
                 // HTTP Request
-                string reqParam = string.Empty;
-                if (string.IsNullOrEmpty(apiKey))
-                {
-                    Console.WriteLine("Could not find the api key. Please set the api key.");
-                    return false;
-                }
-                reqParam += "?crtfc_key=" + apiKey;
+                string reqParam = "?crtfc_key=" + apiKey;
                 // if (!string.IsNullOrEmpty(sj_div)) reqParam += "&sj_div=" + sj_div;
                 reqParam += "&sj_div=" + sj_div.ToString();
 
@@ -3439,35 +3303,34 @@ namespace OpenDart.OpenDartClient
                 if (isXml)
                 {
                     XmlSerializer reader = new XmlSerializer(typeof(ResXbrlTaxonomyResult));
-                    ResXbrlTaxonomyResult result = (ResXbrlTaxonomyResult)reader.Deserialize(new MemoryStream(resData));
-                    result.displayConsole();
+                    result = (ResXbrlTaxonomyResult)reader.Deserialize(new MemoryStream(resData));
+                    // result.displayConsole();
                 }
                 else
                 {
                     resJson = Encoding.UTF8.GetString(resData);
-                    ResXbrlTaxonomyResult result = JsonSerializer.Deserialize<ResXbrlTaxonomyResult>(resJson);
-                    result.displayConsole();
+                    result = JsonSerializer.Deserialize<ResXbrlTaxonomyResult>(resJson);
+                    // result.displayConsole();
                 }
             }
             catch (WebException e)
             {
                 displayWebException(e);
-                return false;
+                throw;
             }
             catch (Exception e)
             {
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
-                reqResultStatus.EXCEPTION = e.Message;
-                return false;
+                throw;
             }
             finally
             {
-                DebugEndProtocol();
+                debugEndProtocol();
             }
 
-            return true;
+            return result;
         }
 
         /******************************************************************************************************************************************************
@@ -3497,9 +3360,12 @@ namespace OpenDart.OpenDartClient
          *  string status = response.GetResponseHeader("status");
          *  string message = response.GetResponseHeader("message");
          */
-        public bool REQ4_1_GET_MAJORSTOCK_INFO(string corp_code, bool isXml = false)
+        public ResMajorstockResult REQ4_1_GET_MAJORSTOCK_INFO(string corp_code, bool isXml = false)
         {
-            DebugBeginProtocol("REQ4_1_GET_MAJORSTOCK_INFO");
+            debugBeginProtocol("REQ4_1_GET_MAJORSTOCK_INFO");
+            checkApiKey();
+
+            ResMajorstockResult result = null;
 
             try
             {
@@ -3513,13 +3379,7 @@ namespace OpenDart.OpenDartClient
                 byte[] reqData = Encoding.UTF8.GetBytes(reqJson);
 
                 // HTTP Request
-                string reqParam = string.Empty;
-                if (string.IsNullOrEmpty(apiKey))
-                {
-                    Console.WriteLine("Could not find the api key. Please set the api key.");
-                    return false;
-                }
-                reqParam += "?crtfc_key=" + apiKey;
+                string reqParam = "?crtfc_key=" + apiKey;
                 if (!string.IsNullOrEmpty(corp_code)) reqParam += "&corp_code=" + corp_code;
 
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(apiUri + "/majorstock." + (isXml ? "xml" : "json") + reqParam);
@@ -3577,35 +3437,34 @@ namespace OpenDart.OpenDartClient
                 if (isXml)
                 {
                     XmlSerializer reader = new XmlSerializer(typeof(ResMajorstockResult));
-                    ResMajorstockResult result = (ResMajorstockResult)reader.Deserialize(new MemoryStream(resData));
-                    result.displayConsole();
+                    result = (ResMajorstockResult)reader.Deserialize(new MemoryStream(resData));
+                    // result.displayConsole();
                 }
                 else
                 {
                     resJson = Encoding.UTF8.GetString(resData);
-                    ResMajorstockResult result = JsonSerializer.Deserialize<ResMajorstockResult>(resJson);
-                    result.displayConsole();
+                    result = JsonSerializer.Deserialize<ResMajorstockResult>(resJson);
+                    // result.displayConsole();
                 }
             }
             catch (WebException e)
             {
                 displayWebException(e);
-                return false;
+                throw;
             }
             catch (Exception e)
             {
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
-                reqResultStatus.EXCEPTION = e.Message;
-                return false;
+                throw;
             }
             finally
             {
-                DebugEndProtocol();
+                debugEndProtocol();
             }
 
-            return true;
+            return result;
         }
 
         /******************************************************************************************************************************************************
@@ -3635,9 +3494,12 @@ namespace OpenDart.OpenDartClient
          *  string status = response.GetResponseHeader("status");
          *  string message = response.GetResponseHeader("message");
          */
-        public bool REQ4_2_GET_ELESTOCK_INFO(string corp_code, bool isXml = false)
+        public ResElestockResult REQ4_2_GET_ELESTOCK_INFO(string corp_code, bool isXml = false)
         {
-            DebugBeginProtocol("REQ4_2_GET_ELESTOCK_INFO");
+            debugBeginProtocol("REQ4_2_GET_ELESTOCK_INFO");
+            checkApiKey();
+
+            ResElestockResult result = null;
 
             try
             {
@@ -3651,13 +3513,7 @@ namespace OpenDart.OpenDartClient
                 byte[] reqData = Encoding.UTF8.GetBytes(reqJson);
 
                 // HTTP Request
-                string reqParam = string.Empty;
-                if (string.IsNullOrEmpty(apiKey))
-                {
-                    Console.WriteLine("Could not find the api key. Please set the api key.");
-                    return false;
-                }
-                reqParam += "?crtfc_key=" + apiKey;
+                string reqParam = "?crtfc_key=" + apiKey;
                 if (!string.IsNullOrEmpty(corp_code)) reqParam += "&corp_code=" + corp_code;
 
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(apiUri + "/elestock." + (isXml ? "xml" : "json") + reqParam);
@@ -3714,35 +3570,34 @@ namespace OpenDart.OpenDartClient
                 if (isXml)
                 {
                     XmlSerializer reader = new XmlSerializer(typeof(ResElestockResult));
-                    ResElestockResult result = (ResElestockResult)reader.Deserialize(new MemoryStream(resData));
-                    result.displayConsole();
+                    result = (ResElestockResult)reader.Deserialize(new MemoryStream(resData));
+                    // result.displayConsole();
                 }
                 else
                 {
                     resJson = Encoding.UTF8.GetString(resData);
-                    ResElestockResult result = JsonSerializer.Deserialize<ResElestockResult>(resJson);
-                    result.displayConsole();
+                    result = JsonSerializer.Deserialize<ResElestockResult>(resJson);
+                    // result.displayConsole();
                 }
             }
             catch (WebException e)
             {
                 displayWebException(e);
-                return false;
+                throw;
             }
             catch (Exception e)
             {
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
-                reqResultStatus.EXCEPTION = e.Message;
-                return false;
+                throw;
             }
             finally
             {
-                DebugEndProtocol();
+                debugEndProtocol();
             }
 
-            return true;
+            return result;
         }
 
         //-----------------------------------------------------------------------------------------------------------------------------------------------------
