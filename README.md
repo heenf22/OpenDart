@@ -22,13 +22,20 @@ DART 사이트에서 제공하는 API를 C#에서 사용하기 쉽도록 라이�
 ~~~
 using OpenDart.Models;
 using OpenDart.OpenDartClient;
-...
-// API 키 및 더미 디렉토리 설정
-OpenDartClient.Instance.apiKey = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
-OpenDartClient.Instance.dummyDirectory = @"C:\Users\heenf\Desktop\Project\dummy";
 
-// 고유번호(전체 기업 종목코드 파일 다운로드 및 설정)
-OpenDartClient.Instance.REQ1_4_GET_CORPCODE();
+...
+
+OpenDartClient client = new OpenDartClient();
+// or
+// OpenDartClient client = new OpenDartClient("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+
+// Open DART API Key(https://opendart.fss.or.kr/ 에서 발급받아야함)
+client.apiKey = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+client.dummyDirectory = @"/home/lgh/project/public/dummy";
+
+ReqDisclosureSearch rds = new ReqDisclosureSearch();
+ResDisclosureSearchResult result = client.REQ1_1_GET_DISCLOSURE_SEARCH(rds);
+
 ...
 ~~~
 
