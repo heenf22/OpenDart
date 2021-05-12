@@ -3300,6 +3300,16 @@ namespace OpenDart.OpenDartClient
             return true;
         }
 
+        // 재무제표구분
+        public enum SJ_DIV {
+            BS1,BS2,BS3,BS4
+            ,IS1,IS2,IS3,IS4
+            ,CIS1,CIS2,CIS3,CIS4
+            ,DCIS1,DCIS2,DCIS3,DCIS4,DCIS5,DCIS6,DCIS7,DCIS8
+            ,CF1,CF2,CF3,CF4
+            ,SCE1,SCE2
+        }
+
         /******************************************************************************************************************************************************
          * Api Category : 3. 상장기업 재무정보
          * Api Name     : 3.5. XBRL택사노미재무제표양식, https://opendart.fss.or.kr/guide/detail.do?apiGrpCd=DS003&apiId=2020001
@@ -3354,7 +3364,7 @@ namespace OpenDart.OpenDartClient
          *  string status = response.GetResponseHeader("status");
          *  string message = response.GetResponseHeader("message");
          */
-        public bool REQ3_5_GET_XBRL_TAXONOMY_INFO(string sj_div, bool isXml = false)
+        public bool REQ3_5_GET_XBRL_TAXONOMY_INFO(SJ_DIV sj_div, bool isXml = false)
         {
             DebugBeginProtocol("REQ3_5_GET_XBRL_TAXONOMY_INFO");
 
@@ -3377,7 +3387,8 @@ namespace OpenDart.OpenDartClient
                     return false;
                 }
                 reqParam += "?crtfc_key=" + apiKey;
-                if (!string.IsNullOrEmpty(sj_div)) reqParam += "&sj_div=" + sj_div;
+                // if (!string.IsNullOrEmpty(sj_div)) reqParam += "&sj_div=" + sj_div;
+                reqParam += "&sj_div=" + sj_div.ToString();
 
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(apiUri + "/xbrlTaxonomy." + (isXml ? "xml" : "json") + reqParam);
                 request.ProtocolVersion = HttpVersion.Version11;

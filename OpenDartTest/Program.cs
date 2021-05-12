@@ -28,7 +28,7 @@ namespace OpenDartTest
             // OpenDartClient.Instance.REQ1_3_GET_DOCUMENT_FILE("20190401004781");
 
             // 1.4. 고유번호(전체 기업 종목코드 파일 다운로드 및 설정)
-            OpenDartClient.Instance.REQ1_4_GET_CORPCODE_INFO();
+            // OpenDartClient.Instance.REQ1_4_GET_CORPCODE_INFO();
             //========================================================================
 
             //========================================================================
@@ -87,7 +87,7 @@ namespace OpenDartTest
             // OpenDartClient.Instance.REQ3_4_GET_FNLTT_SINGL_ACNT_ALL_INFO("00126380", "2018", "11011", "OFS");
 
             // 3.5. XBRL택사노미재무제표양식, sj_div=BS1
-            // OpenDartClient.Instance.REQ3_5_GET_XBRL_TAXONOMY_INFO("BS1");
+            OpenDartClient.Instance.REQ3_5_GET_XBRL_TAXONOMY_INFO(OpenDartClient.SJ_DIV.BS2);
             //========================================================================
 
             //========================================================================
