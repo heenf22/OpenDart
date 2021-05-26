@@ -16,7 +16,7 @@ namespace OpenDartTest
                 // OpenDartClient client = new OpenDartClient("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
                 // Open DART API Key(https://opendart.fss.or.kr/ 에서 발급받아야함)
                 client.apiKey = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
-                client.dummyDirectory = @"/home/lgh/project/public/dummy";
+                client.dummyDirectory = @"/home/lgh/project/dummy";
 
                 //========================================================================
                 // 1. 공시정보 테스트 (REQ1_XXX)
@@ -33,7 +33,7 @@ namespace OpenDartTest
                 // string result = client.REQ1_3_GET_DOCUMENT_FILE("20190401004781");
 
                 // 1.4. 고유번호(전체 기업 종목코드 파일 다운로드 및 설정)
-                // ResCorpCodeResult result = client.REQ1_4_GET_CORPCODE_INFO();
+                ResCorpCodeResult result = client.REQ1_4_GET_CORPCODE_INFO();
                 //========================================================================
 
                 //========================================================================
@@ -103,7 +103,7 @@ namespace OpenDartTest
                 // ResMajorstockResult result = client.REQ4_1_GET_MAJORSTOCK_INFO("00126380");
 
                 // 4.2. 임원ㆍ주요주주 소유보고, corp_code=00126380
-                ResElestockResult result = client.REQ4_2_GET_ELESTOCK_INFO("00126380");
+                // ResElestockResult result = client.REQ4_2_GET_ELESTOCK_INFO("00126380");
                 //========================================================================
 
                 // 결과 확인

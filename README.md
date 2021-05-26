@@ -12,6 +12,7 @@ DART 사이트에서 제공하는 API를 C#에서 사용하기 쉽도록 라이�
 - dotnet sln add OpenDart/OpenDart.csproj
 - dotnet sln add OpenDartTest/OpenDartTest.csproj
 - dotnet run --project OpenDartTest/OpenDartTest.csproj
+- dotnet add OpenDartTest/OpenDartTest.csproj package Npgsql --version 5.0.5
 
 ## 사용법
 1. [Open DART (https://opendart.fss.or.kr/)](https://opendart.fss.or.kr/) 사이트에서 가입 후 API 키를 얻는다.
