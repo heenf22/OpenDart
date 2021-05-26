@@ -1,6 +1,7 @@
 ﻿using System;
 using OpenDart.Models;
 using OpenDart.OpenDartClient;
+using Npgsql;
 
 namespace OpenDartTest
 {
@@ -8,8 +9,12 @@ namespace OpenDartTest
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello TestOpenDart!");
+            // Test_OpenDart();
+            Test_PostgreSQL();
+        }
 
+        static void Test_OpenDart()
+        {
             try
             {
                 OpenDartClient client = new OpenDartClient();
@@ -117,6 +122,38 @@ namespace OpenDartTest
                 Console.WriteLine("*******************************************************************************");
                 Console.WriteLine("!!! EXCEPTION: " + e.Message);
                 Console.WriteLine("*******************************************************************************");
+            }
+        }
+
+        static void Test_PostgreSQL()
+        {
+            using (var conn = new NpgsqlConnection("host=localhost;username=postgres;password=;database=postgres"))
+            // using (var conn = new NpgsqlConnection("host=localhost;username=bcadmin;password=1234;database=bc_db"))
+            {
+                try
+                {
+                    conn.Open();
+                    using (var cmd = new NpgsqlCommand())
+                    {
+                        cmd.Connection = conn;
+                        cmd.CommandText = 
+                            "SELECT table_name " +
+                            "FROM information_schema.tables " + "" +
+                            "WHERE table_schema = 'public' AND table_type = 'BASE TABLE'";
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                Console.WriteLine(reader.GetString(0));
+                                //or listBox1.Items.Add(reader["table_name"].ToString());
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                }
             }
         }
     }
