@@ -127,8 +127,8 @@ namespace OpenDartTest
 
         static void Test_PostgreSQL()
         {
-            using (var conn = new NpgsqlConnection("host=localhost;username=postgres;password=;database=postgres"))
-            // using (var conn = new NpgsqlConnection("host=localhost;username=bcadmin;password=1234;database=bc_db"))
+            // using (var conn = new NpgsqlConnection("host=localhost;username=postgres;password=;database=postgres"))
+            using (var conn = new NpgsqlConnection("host=localhost;username=bcadmin;password=1234;database=bc_db"))
             {
                 try
                 {
@@ -136,16 +136,19 @@ namespace OpenDartTest
                     using (var cmd = new NpgsqlCommand())
                     {
                         cmd.Connection = conn;
+                        // cmd.CommandText = 
+                        //     "SELECT table_name " +
+                        //     "FROM information_schema.tables " + "" +
+                        //     "WHERE table_schema = 'public' AND table_type = 'BASE TABLE'";
                         cmd.CommandText = 
-                            "SELECT table_name " +
-                            "FROM information_schema.tables " + "" +
-                            "WHERE table_schema = 'public' AND table_type = 'BASE TABLE'";
+                            "SELECT * " +
+                            "  FROM menu ";
                         using (var reader = cmd.ExecuteReader())
                         {
                             while (reader.Read())
                             {
-                                Console.WriteLine(reader.GetString(0));
-                                //or listBox1.Items.Add(reader["table_name"].ToString());
+                                // reader.GetName(0);
+                                Console.WriteLine(reader.GetString(1));
                             }
                         }
                     }
