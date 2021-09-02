@@ -16,7 +16,7 @@ namespace OpenStock
             code = "";
             name = "";
             type = "";
-            coount = 0;
+            count = 0;
         }
 
         public void displayConsole()
@@ -27,7 +27,7 @@ namespace OpenStock
             Console.WriteLine("code: {0}", code);
             Console.WriteLine("name: {0}", name);
             Console.WriteLine("type: {0}", type);
-            Console.WriteLine("coount: {0}", coount);
+            Console.WriteLine("count: {0}", count);
             Console.WriteLine("==================================================");
         }
     }
