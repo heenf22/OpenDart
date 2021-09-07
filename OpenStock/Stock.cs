@@ -172,7 +172,7 @@ namespace OpenStock
             ValuationBuy3 = (LastPrise < FutureStockPrice1) ? true : false;
         }
 
-        public void displayConsole()
+        public void displayConsole(bool isLocal = false)
         {
             Console.WriteLine("==================================================");
             Console.WriteLine("Stock Information");
@@ -209,7 +209,7 @@ namespace OpenStock
             Console.WriteLine("BuyStockCount: {0}", BuyStockCount);
             Console.WriteLine("BuyProfit: {0}", BuyProfit);
             Console.WriteLine("BuyProfitRatio: {0}", BuyProfitRatio);
-            Console.WriteLine("LastUpdateDT: {0}", LastUpdateDT);
+            Console.WriteLine("LastUpdateDT: {0}", isLocal ? TimeZoneInfo.ConvertTime(LastUpdateDT, TimeZoneInfo.Utc, TimeZoneInfo.Local) : LastUpdateDT);
             Console.WriteLine("==================================================");
         }
     }

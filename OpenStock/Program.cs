@@ -45,7 +45,7 @@ namespace OpenStock
 
                     System.Console.WriteLine(line);
                     counter++;
-                }  
+                }
             }
             
             file.Close();  
