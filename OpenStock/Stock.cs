@@ -113,6 +113,7 @@ namespace OpenStock
             setEPS();
             setFutureStockPrice();
             setValuation();
+            setBuyProfit();
         }
 
         // 평균순익(직전년도) = 영엽이익(LastProfit1) + 당기순익(LastProfit2) / 2
@@ -170,6 +171,11 @@ namespace OpenStock
             ValuationBuy2 = (LastPrise < FutureStockPrice1) ? true : false;
             ValuationPrise3 = FutureStockPrice3 - LastPrise;
             ValuationBuy3 = (LastPrise < FutureStockPrice1) ? true : false;
+        }
+
+        private void setBuyProfit()
+        {
+            BuyProfit = (LastPrise - BuyPrise) * BuyStockCount;
         }
 
         public void displayConsole(bool isLocal = false)
