@@ -89,11 +89,19 @@ namespace OpenStock
 
         // http://data.krx.co.kr/contents/MDC/MDI/mdiLoader/index.cmd?menuId=MDC0201020101
         // [12001] 전종목 시세, csv_file 내용의 라인값을 입력
-        public void initialize(string csvLine)
+        // 종목코드, 종목명, 시장구분, 소속부, 종가, 대비, 등락률, 시가, 고가, 저가, 거래량, 거래대금, 시가총액, 상장주식수
+        public void initialize(string line)
         {
-            string[] item = csvLine.Split(',');
+            Console.WriteLine(">> {0}", line);
+            string[] columns = line.Split(',');
             // todo...
-
+            Code = columns[0];            // *종목 코드 (8자리)
+            Name = columns[1];            // 종목 이름
+            Type = columns[2];            // 시장 구분(KOSPI, KOSDAQ, KONEX)
+            LastPrise = double.Parse(columns[4]);       // 종가
+            TransactionVolume = double.Parse(columns[10]);   // 거래량
+            TransactionPrice = double.Parse(columns[11]);    // 거래대금
+            LastStockCount = double.Parse(columns[13]);      // 상장주식수
         }
 
         // 반드시 initialize 로 값 설정 이후 호출
@@ -169,9 +177,9 @@ namespace OpenStock
             Console.WriteLine("==================================================");
             Console.WriteLine("Stock Information");
             Console.WriteLine("--------------------------------------------------");
-            Console.WriteLine("code: {0}", code);
-            Console.WriteLine("name: {0}", name);
-            Console.WriteLine("type: {0}", type);
+            Console.WriteLine("Code: {0}", Code);
+            Console.WriteLine("Name: {0}", Name);
+            Console.WriteLine("Type: {0}", Type);
             Console.WriteLine("LastPrise: {0}", LastPrise);
             Console.WriteLine("TransactionVolume: {0}", TransactionVolume);
             Console.WriteLine("TransactionPrice: {0}", TransactionPrice);

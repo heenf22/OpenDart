@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Text;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace OpenStock
 {
@@ -14,6 +16,7 @@ namespace OpenStock
         {
             int counter = 0;  
             string line;
+            Dictionary<string, Stock> stocks = new Dictionary<string, Stock>();
             
             // 전체선택, 종목코드, 종목명, 시장구분, 소속부, 종가, 대비, 등락률, 시가, 고가, 저가, 거래량, 거래대금, 시가총액, 상장주식수
             // System.IO.StreamReader file = new System.IO.StreamReader(@"/home/lgh/project/OpenDart/OpenStock/data/data_1834_20210902.csv", Encoding.UTF8);
@@ -23,16 +26,22 @@ namespace OpenStock
                 // 첫 라인은 컬럼 정보임
                 while((line = file.ReadLine()) != null)  
                 {
-                    string[] columns = line.Split(',');
+                    // string[] columns = line.Split(',');
                     // string euckr = Encoding.GetEncoding("euc-kr").GetString(
                     //                 Encoding.Convert(
                     //                 Encoding.UTF8,
                     //                 Encoding.GetEncoding("euc-kr"),
                     //                 Encoding.UTF8.GetBytes(line)));
-                    foreach (string e in columns)
-                    {
-                        System.Console.WriteLine(">> {0}", e);
-                    }
+                    // foreach (string e in columns)
+                    // {
+                    //     System.Console.WriteLine(">> {0}", e);
+                    // }
+
+                    Stock stock = new Stock();
+                    stock.initialize(line.Replace("\"", ""));
+                    // stock.reload();
+                    stock.displayConsole();
+                    stocks.Add(stock.Code, stock);
 
                     System.Console.WriteLine(line);
                     counter++;
