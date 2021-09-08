@@ -8,6 +8,8 @@ using System.Xml;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Diagnostics;
+using OpenDart.Models;
+using OpenDart.OpenDartClient;
 
 namespace OpenStock
 {
@@ -69,7 +71,7 @@ namespace OpenStock
             try
             {
                 this.path = path + Path.DirectorySeparatorChar + "stocks.json";
-                if (File.Exists(path))
+                if (File.Exists(this.path))
                 {
                     return load();
                 }
@@ -89,6 +91,82 @@ namespace OpenStock
         public void clear()
         {
             stocks.Clear();
+        }
+
+        public bool importCsv(string csvPath)
+        {
+            StreamReader sr = new StreamReader(csvPath);
+            try
+            {
+                string line = "";
+                if ((line = sr.ReadLine()) != null)
+                {
+                    // 첫 라인은 컬럼 정보임
+                    while((line = sr.ReadLine()) != null)  
+                    {
+                        // string[] columns = line.Split(',');
+                        // string euckr = Encoding.GetEncoding("euc-kr").GetString(
+                        //                 Encoding.Convert(
+                        //                 Encoding.UTF8,
+                        //                 Encoding.GetEncoding("euc-kr"),
+                        //                 Encoding.UTF8.GetBytes(line)));
+                        // foreach (string e in columns)
+                        // {
+                        //     System.Console.WriteLine(">> {0}", e);
+                        // }
+
+                        Stock stock = new Stock();
+                        stock.initialize(line.Replace("\"", ""));
+                        // stock.reload();
+                        stock.displayConsole();
+                        if (isExist(stock))
+                        {
+                            update(stock);
+                        }
+                        else
+                        {
+                            add(stock);
+                        }
+                        // System.Console.WriteLine(line);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                System.Console.WriteLine("!!! Exception: {0}", e.Message);
+                return false;
+            }
+            finally
+            {
+                sr.Close();  
+            }
+            
+            return true;            
+        }
+
+        public void importOpenDart()
+        {
+            System.Console.WriteLine(">> start... importOpenDart, stocks count: {0}", stocks.Count);
+            foreach (KeyValuePair<string, Stock> e in stocks)
+            {
+                e.Value.displayConsole();
+
+                OpenDartClient odc = new OpenDartClient("af02b784cd62f41d5601bea249119dac0890a123", @"/home/lgh/project/OpenDart/OpenStock/data");
+                ResFnlttSinglAcntResult result = odc.REQ3_1_GET_FNLTT_SINGL_ACNT_INFO("00" + e.Value.Code, "2020", "11011");
+                if (result != null)
+                {
+                    System.Console.WriteLine(">> result is not null... importOpenDart");
+                    result.displayConsole();
+                }
+                else
+                {
+                    System.Console.WriteLine(">> result is null... importOpenDart");
+                }
+
+                break;
+            }
+
+            System.Console.WriteLine(">> end... importOpenDart");
         }
 
         public bool load()
@@ -173,6 +251,21 @@ namespace OpenStock
         public bool remove(Stock obj)
         {
             return stocks.Remove(obj.Code);
+        }
+
+        public bool isExist(Stock obj)
+        {
+            try
+            {
+                Stock find = stocks[obj.Code];
+            }
+            catch (KeyNotFoundException e)
+            {
+                Console.WriteLine("!!! KeyNotFoundException: {0}", e.Message);
+                return false;
+            }
+
+            return true;
         }
 
         public Stock getStock(string id)

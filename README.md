@@ -14,6 +14,8 @@ DART 사이트에서 제공하는 API를 C#에서 사용하기 쉽도록 라이�
 - dotnet run --project OpenDartTest/OpenDartTest.csproj
 - dotnet add OpenDartTest/OpenDartTest.csproj package Npgsql --version 5.0.5
 
+- dotnet add OpenStock/OpenStock.csproj reference OpenDart/OpenDart.csproj
+
 ## 사용법
 1. [Open DART (https://opendart.fss.or.kr/)](https://opendart.fss.or.kr/) 사이트에서 가입 후 API 키를 얻습니다.
 2. 다음과 같이 API 키 및 더미 디렉토리를 설정하고 REQ 프로토콜을 호출합니다.

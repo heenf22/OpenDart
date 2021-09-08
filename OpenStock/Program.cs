@@ -9,7 +9,12 @@ namespace OpenStock
     {
         static void Main(string[] args)
         {
-            test_read_csv();
+            bool result = StockService.Instance.initialize(@"/home/lgh/project/OpenDart/OpenStock/data");
+            System.Console.WriteLine(">> initialize result: {0}", result);
+            // StockService.Instance.importCsv(@"/home/lgh/project/OpenDart/OpenStock/data/data_1834_20210902.csv");
+            StockService.Instance.importOpenDart();
+            StockService.Instance.save();
+            // test_read_csv();
         }
 
         static void test_read_csv()

@@ -9,8 +9,8 @@ namespace OpenDartTest
     {
         static void Main(string[] args)
         {
-            // Test_OpenDart();
-            Test_PostgreSQL();
+            Test_OpenDart();
+            // Test_PostgreSQL();
         }
 
         static void Test_OpenDart()
@@ -20,7 +20,7 @@ namespace OpenDartTest
                 OpenDartClient client = new OpenDartClient();
                 // OpenDartClient client = new OpenDartClient("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
                 // Open DART API Key(https://opendart.fss.or.kr/ 에서 발급받아야함)
-                client.apiKey = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+                client.apiKey = "af02b784cd62f41d5601bea249119dac0890a123";
                 client.dummyDirectory = @"/home/lgh/project/dummy";
 
                 //========================================================================
@@ -38,7 +38,7 @@ namespace OpenDartTest
                 // string result = client.REQ1_3_GET_DOCUMENT_FILE("20190401004781");
 
                 // 1.4. 고유번호(전체 기업 종목코드 파일 다운로드 및 설정)
-                ResCorpCodeResult result = client.REQ1_4_GET_CORPCODE_INFO();
+                // ResCorpCodeResult result = client.REQ1_4_GET_CORPCODE_INFO();
                 //========================================================================
 
                 //========================================================================
@@ -85,7 +85,7 @@ namespace OpenDartTest
                 // 3. 상장기업 재무정보 테스트 (REQ3_XXX)
                 //========================================================================
                 // 3.1. 단일회사 주요계정, corp_code=00126380&bsns_year=2018&reprt_code=11011
-                // ResFnlttSinglAcntResult result = client.REQ3_1_GET_FNLTT_SINGL_ACNT_INFO("00126380", "2018", "11011");
+                ResFnlttSinglAcntResult result = client.REQ3_1_GET_FNLTT_SINGL_ACNT_INFO("00126380", "2018", "11011");
 
                 // 3.2. 다중회사 주요계정, corp_code=00356370,00334624&bsns_year=2018&reprt_code=11011
                 // ResFnlttMultiAcntResult result = client.REQ3_2_GET_FNLTT_MULTI_ACNT_INFO("00356370,00334624", "2018", "11011");

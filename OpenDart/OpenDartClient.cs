@@ -52,10 +52,11 @@ namespace OpenDart.OpenDartClient
             initialize();
         }
 
-        public OpenDartClient(string apiKey)
+        public OpenDartClient(string apiKey, string dummyPath)
         {
             this.apiKey = apiKey;
-            dummyDirectory = @"C:\Users\heenf\Desktop\Project\dummy";
+            dummyDirectory = dummyPath;
+            // dummyDirectory = @"C:\Users\heenf\Desktop\Project\dummy";
             initialize();
         }
 
@@ -64,7 +65,7 @@ namespace OpenDart.OpenDartClient
             requestApiKeyCount = 0;
 
             // X.509 SSL Define (private OCP) SSL 통신을 위해 CertificatePolicy property 등록
-            //System.Net.ServicePointManager.ServerCertificateValidationCallback += new System.Net.Security.RemoteCertificateValidationCallback(ValidateServerCertificate);
+            // System.Net.ServicePointManager.ServerCertificateValidationCallback += new System.Net.Security.RemoteCertificateValidationCallback(ValidateServerCertificate);
             // or
             ServicePointManager.ServerCertificateValidationCallback = delegate (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors) { return true; };
             // ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls |      // TLS 1.0
