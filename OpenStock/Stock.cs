@@ -6,6 +6,7 @@ namespace OpenStock
 {
     public class Stock
     {
+        public string CorpCode { get; set; }        // *기업 고유번호, 공시대상회사의 고유번호(8자리) <- OpenDart
         public string Code { get; set; }            // *종목 코드 (8자리)
         public string Name { get; set; }            // 종목 이름
         public string Type { get; set; }            // 시장 구분(KOSPI, KOSDAQ, KONEX)
@@ -19,6 +20,9 @@ namespace OpenStock
         //---
         public double PresentTotalStockPrise { get; set; }  // 현재 시가총액 = 상장주식수(LastStockCount) x 종가(LastPrise)
         public double FutureTotalStockPrise { get; set; }   // 적정 시가총액 = 영업이익(LastProfit1) x 적정 PER(UserPER)
+        public double FutureTotalStockPrise1 { get; set; }  // 적정 시가총액 = 영업이익(LastProfit1) x PER1(영업이익)
+        public double FutureTotalStockPrise2 { get; set; }  // 적정 시가총액 = 당기순익(LastProfit1) x PER2(당기순익)
+        public double FutureTotalStockPrise3 { get; set; }  // 적정 시가총액 = 평균순익(LastProfit1) x PER3(평균순익)
         public double PER1 { get; set; }                // 현재 PER(영업이익) = 현재 시가총액(PresentTotalStockPrise) / 영업이익(LastProfit3)
         public double PER2 { get; set; }                // 현재 PER(당기순익) = 현재 시가총액(PresentTotalStockPrise) / 당기순익(LastProfit3)
         public double PER3 { get; set; }                // 현재 PER(평균순익) = 현재 시가총액(PresentTotalStockPrise) / 평균순익(LastProfit3)
@@ -47,6 +51,7 @@ namespace OpenStock
 
         public Stock()
         {
+            CorpCode = "";
             Code = "";
             Name = "";
             Type = "";
@@ -134,13 +139,25 @@ namespace OpenStock
         private void setPER()
         {
             PER1 = PresentTotalStockPrise / LastProfit1;
+            if (PER1 < 0) PER1 = 0;
             PER2 = PresentTotalStockPrise / LastProfit2;
+            if (PER2 < 0) PER2 = 0;
             PER3 = PresentTotalStockPrise / LastProfit3;
+            if (PER3 < 0) PER3 = 0;
 
             if (UserPER == 0)
             {
                 UserPER = PER3;
             }
+        }
+
+        // 적정 시가총액 = 여업이익(LastProfit) x 적정 PER(UserPER)
+        private void setFutureTotalStockPrise()
+        {
+            FutureTotalStockPrise = LastProfit * UserPER;
+            FutureTotalStockPrise1 = LastProfit1 * PER1;
+            FutureTotalStockPrise2 = LastProfit2 * PER2;
+            FutureTotalStockPrise3 = LastProfit3 * PER3;
         }
 
         // EPS(영업이익) = 영업이익(LastProfit1) / 상장주식수(LastStockCount)
@@ -165,12 +182,12 @@ namespace OpenStock
         // 주가차이(영업이익) = 미래주가(영업이익) - 종가
         private void setValuation()
         {
-            ValuationPrise1 = FutureStockPrice1 - LastPrise;
             ValuationBuy1 = (LastPrise < FutureStockPrice1) ? true : false;
+            ValuationPrise1 = FutureStockPrice1 - LastPrise;
+            ValuationBuy2 = (LastPrise < FutureStockPrice2) ? true : false;
             ValuationPrise2 = FutureStockPrice2 - LastPrise;
-            ValuationBuy2 = (LastPrise < FutureStockPrice1) ? true : false;
+            ValuationBuy3 = (LastPrise < FutureStockPrice3) ? true : false;
             ValuationPrise3 = FutureStockPrice3 - LastPrise;
-            ValuationBuy3 = (LastPrise < FutureStockPrice1) ? true : false;
         }
 
         private void setBuyProfit()
@@ -183,6 +200,7 @@ namespace OpenStock
             Console.WriteLine("==================================================");
             Console.WriteLine("Stock Information");
             Console.WriteLine("--------------------------------------------------");
+            Console.WriteLine("CorpCode: {0}", CorpCode);
             Console.WriteLine("Code: {0}", Code);
             Console.WriteLine("Name: {0}", Name);
             Console.WriteLine("Type: {0}", Type);
@@ -195,6 +213,9 @@ namespace OpenStock
             Console.WriteLine("LastProfit3: {0}", LastProfit3);
             Console.WriteLine("PresentTotalStockPrise: {0}", PresentTotalStockPrise);
             Console.WriteLine("FutureTotalStockPrise: {0}", FutureTotalStockPrise);
+            Console.WriteLine("FutureTotalStockPrise1: {0}", FutureTotalStockPrise1);
+            Console.WriteLine("FutureTotalStockPrise2: {0}", FutureTotalStockPrise2);
+            Console.WriteLine("FutureTotalStockPrise3: {0}", FutureTotalStockPrise3);
             Console.WriteLine("PER1: {0}", PER1);
             Console.WriteLine("PER2: {0}", PER2);
             Console.WriteLine("PER3: {0}", PER3);

@@ -70,8 +70,15 @@ namespace OpenStock
         {
             try
             {
-                this.path = path + Path.DirectorySeparatorChar + "stocks.json";
-                if (File.Exists(this.path))
+                this.path = path;
+
+                if (!Directory.Exists(this.path))
+                {
+                    Directory.CreateDirectory(this.path);
+                }
+
+                string filePath = this.path + Path.DirectorySeparatorChar + "stocks.json";
+                if (File.Exists(filePath))
                 {
                     return load();
                 }
@@ -173,7 +180,8 @@ namespace OpenStock
         {
             try
             {
-                StreamReader sr = new StreamReader(path, Encoding.UTF8);
+                string filePath = this.path + Path.DirectorySeparatorChar + "stocks.json";
+                StreamReader sr = new StreamReader(filePath, Encoding.UTF8);
                 if (sr != null)
                 {
                     string json = sr.ReadToEnd();
@@ -198,10 +206,11 @@ namespace OpenStock
         {
             try
             {
+                string filePath = this.path + Path.DirectorySeparatorChar + "stocks.json";
                 string json = JsonSerializer.Serialize<Dictionary<string, Stock>>(stocks, jsonSerializerOptionsCamelCasePretty);
                 if (!string.IsNullOrEmpty(json))
                 {
-                    StreamWriter sw = new StreamWriter(path, false, Encoding.UTF8);
+                    StreamWriter sw = new StreamWriter(filePath, false, Encoding.UTF8);
                     if (sw != null)
                     {
                         sw.Write(json);
@@ -217,6 +226,157 @@ namespace OpenStock
 
             return false;
         }
+
+        public bool isFinancialStatementsFile(Stock stock, string year)
+        {
+            string filePath = path + Path.DirectorySeparatorChar + "[FS]" + stock.Name + "-" + stock.CorpCode + "-" + stock.Code + "-" + stock.Type + "-" + year + ".json";
+            return File.Exists(filePath);
+        }
+
+        public void setFinancialStatements(Stock stock, string year, string fs_div = "CFS", string sj_div = "IS")
+        {
+            bool isFindCFS1 = false;
+            bool isFindCFS2 = false;
+            ResFnlttSinglAcntResult result = loadFinancialStatements(stock, year);
+            foreach (ResFnlttSinglAcntItem item in result.list)
+            {
+                if (isFindCFS1 && isFindCFS2)
+                {
+                    break;
+                }
+
+                // CFS:여녈재무제표 && IS:손익계산서
+                if (item.fs_div.Equals(fs_div) && item.sj_div.Equals(sj_div))
+                {
+                    // 영업이익 찾기
+                    if (item.account_nm.Equals("영업이익"))
+                    {
+                        stock.ProfitData = item.thstrm_dt;
+                        stock.LastProfit1 = double.Parse(item.thstrm_amount.Replace(",", ""));
+                        isFindCFS1 = true;
+                    }
+
+                    // 당기순이익 찾기
+                    if (item.account_nm.Equals("영업이익"))
+                    {
+                        stock.ProfitData = item.thstrm_dt;
+                        stock.LastProfit2 = double.Parse(item.thstrm_amount.Replace(",", ""));
+                        isFindCFS2 = true;
+                    }
+                }
+            }
+
+            // 연결재무재표가 없는 단일 회사는 재무재표로 검색
+            if (!isFindCFS1 && !isFindCFS2)
+            {
+                foreach (ResFnlttSinglAcntItem item in result.list)
+                {
+                    if (isFindCFS1 && isFindCFS2)
+                    {
+                        break;
+                    }
+
+                    // CFS: 연결재무재표 && IS:손익계산서
+                    if (item.fs_div.Equals("OFS") && item.sj_div.Equals(sj_div))
+                    {
+                        // 영업이익 찾기
+                        if (item.account_nm.Equals("영업이익"))
+                        {
+                            stock.ProfitData = item.thstrm_dt;
+                            stock.LastProfit1 = double.Parse(item.thstrm_amount.Replace(",", ""));
+                            isFindCFS1 = true;
+                        }
+
+                        // 당기순이익 찾기
+                        if (item.account_nm.Equals("영업이익"))
+                        {
+                            stock.ProfitData = item.thstrm_dt;
+                            stock.LastProfit2 = double.Parse(item.thstrm_amount.Replace(",", ""));
+                            isFindCFS2 = true;
+                        }
+                    }
+                }
+            }
+
+            stock.reload();
+            update(stock);
+            save();
+        }
+
+        public ResFnlttSinglAcntResult loadFinancialStatements(Stock stock, string year)
+        {
+            try
+            {
+                string filePath = path + Path.DirectorySeparatorChar + "[FS]" + stock.Name + "-" + stock.CorpCode + "-" + stock.Code + "-" + stock.Type + "-" + year + ".json";
+                StreamReader sr = new StreamReader(filePath, Encoding.UTF8);
+                if (sr != null)
+                {
+                    string json = sr.ReadToEnd();
+                    sr.Close();
+
+                    ResFnlttSinglAcntResult fs = JsonConvert.DeserializeObject<ResFnlttSinglAcntResult>(json);
+                    Console.WriteLine("Options Information: {0}", json);
+                    return fs;
+                }
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine("!!! Exception: {0}", e.ToString());
+            }
+
+            return null;
+        }
+
+        public bool saveFinancialStatements(Stock stock, ResFnlttSinglAcntResult fs, string year)
+        {
+            try
+            {
+                string filePath = path + Path.DirectorySeparatorChar + "[FS]" + stock.Name + "-" + stock.CorpCode + "-" + stock.Code + "-" + stock.Type + "-" + year + ".json";
+                string json = JsonConvert.SerializeObject(fs, Formatting.Indented);
+                StreamWriter sw = new StreamWriter(filePath, false, Encoding.UTF8);
+                if (sw != null)
+                {
+                    sw.Write(json);
+                    sw.Close();
+                    return true;
+                }
+            }
+            catch (System.Exception)
+            {
+                Console.WriteLine("!!! Exception: {0}", e.ToString());
+            }
+
+            return false;
+        }
+
+        // public bool isExist(Stock obj)
+        // {
+        //     try
+        //     {
+        //         Stock find = stocks[obj.Code];
+        //     }
+        //     catch (KeyNotFoundException e)
+        //     {
+        //         Console.WriteLine("!!! KeyNotFoundException: {0}", e.Message);
+        //         return false;
+        //     }
+
+        //     return true;
+        // }
+
+        // public Stock getStock(string code)
+        // {
+        //     try
+        //     {
+        //         return stocks[code];
+        //     }
+        //     catch (KeyNotFoundException e)
+        //     {
+        //         Console.WriteLine("!!! KeyNotFoundException: {0}", e.Message);
+        //     }
+
+        //     return null;
+        // }
 
         public bool add(Stock obj)
         {
@@ -251,6 +411,21 @@ namespace OpenStock
         public bool remove(Stock obj)
         {
             return stocks.Remove(obj.Code);
+        }
+
+        public bool isExist(string code)
+        {
+            try
+            {
+                Stock find = stocks[code];
+            }
+            catch (KeyNotFoundException e)
+            {
+                Console.WriteLine("!!! KeyNotFoundException: {0}", e.Message);
+                return false;
+            }
+
+            return true;
         }
 
         public bool isExist(Stock obj)

@@ -20,7 +20,7 @@ namespace OpenDartTest
                 OpenDartClient client = new OpenDartClient();
                 // OpenDartClient client = new OpenDartClient("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
                 // Open DART API Key(https://opendart.fss.or.kr/ 에서 발급받아야함)
-                client.apiKey = "af02b784cd62f41d5601bea249119dac0890a123";
+                client.apiKey = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
                 client.dummyDirectory = @"/home/lgh/project/dummy";
 
                 //========================================================================
