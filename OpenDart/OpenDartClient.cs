@@ -63,6 +63,9 @@ namespace OpenDart.OpenDartClient
         private void initialize()
         {
             requestApiKeyCount = 0;
+            
+            //.Net Core는 기본적으로 한글을 지원 안 하기 때문에 다음 코드로 등록해 주어야 합니다.
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
             // X.509 SSL Define (private OCP) SSL 통신을 위해 CertificatePolicy property 등록
             // System.Net.ServicePointManager.ServerCertificateValidationCallback += new System.Net.Security.RemoteCertificateValidationCallback(ValidateServerCertificate);

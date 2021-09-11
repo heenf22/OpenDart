@@ -14,6 +14,7 @@ namespace OpenStock
         public double TransactionVolume { get; set; }   // 거래량
         public double TransactionPrice { get; set; }    // 거래대금
         public double LastStockCount { get; set; }      // 상장주식수
+        public string ProfitDate { get; set; }          // 
         public double LastProfit1 { get; set; }         // 영엽이익(직전년도)
         public double LastProfit2 { get; set; }         // 당기순익(직전년도)
         public double LastProfit3 { get; set; }         // 평균순익(직전년도) = 영엽이익(LastProfit1) + 당기순익(LastProfit2) / 2
